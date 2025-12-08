@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Signup Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Signup Test</h1>
+    <button onclick="testSignup()">Test Signup</button>
+    <div id="result"></div>
+
+    <script>
+        const supabaseUrl = 'https://knxacwrxwwnptvqbafhi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtueGFjd3J4d3ducHR2cWJxZmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MjQyNTcsImV4cCI6MjA3OTIwMDI1N30.dRIbPj2vHD8uxaAYgtPNCwuID0lg5QkPFb4_pcSSSMM';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function testSignup() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing signup...';
+            
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: 'test' + Date.now() + '@test.com',
+                    password: 'password123',
+                    options: {
+                        data: {
+                            full_name: 'Test User'
+                        }
+                    }
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+                    console.error('Signup error:', error);
+                } else {
+                    resultDiv.innerHTML = '<p style="color: green;">Success! User created: ' + JSON.stringify(data, null, 2) + '</p>';
+                    console.log('Signup success:', data);
+                }
+            } catch (e) {
+                resultDiv.innerHTML = '<p style="color: red;">Exception: ' + e.message + '</p>';
+                console.error('Exception:', e);
+            }
+        }
+    </script>
+</body>
+</html>

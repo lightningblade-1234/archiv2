@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { Community } from '@/components/Community';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Video, 
-  Headphones, 
-  FileText, 
+import {
+  BookOpen,
+  Video,
+  Headphones,
+  FileText,
   Search,
   Clock,
   Star,
@@ -20,6 +19,8 @@ import {
   Heart,
   Brain,
   Shield,
+  Flower2,
+  Sparkles,
   Wind,
   Zap,
   Flower,
@@ -34,13 +35,18 @@ import {
   Calendar
 } from 'lucide-react';
 import { ShimmerCard } from '@/components/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
+import { MovementExercises } from '@/components/MovementExercises';
+import { MeditationHub } from '@/components/MeditationHub';
+import { BreathingExercise } from '@/components/BreathingExercise';
+import { MindfulnessActivity } from '@/components/MindfulnessActivity';
 
 interface Resource {
   id: string;
   title: string;
   description: string;
   type: 'article' | 'video' | 'audio' | 'pdf';
-  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general';
+  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general' | 'meditation' | 'yoga';
   duration?: string;
   rating: number;
   featured: boolean;
@@ -66,24 +72,131 @@ interface TimerState {
 }
 
 export const ResourcesAndSelfCare: React.FC = () => {
+  console.log('🔵 ResourcesAndSelfCare component loaded!');
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResourceCategory, setSelectedResourceCategory] = useState('all');
   const [selectedActivityCategory, setSelectedActivityCategory] = useState<string>('all');
-  const [completedToday, setCompletedToday] = useState(3);
-  const [dailyGoal] = useState(5);
-  const [isCommunityMode, setIsCommunityMode] = useState(false);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [isQuickRelaxOpen, setIsQuickRelaxOpen] = useState(false);
+  const [isBreathingOpen, setIsBreathingOpen] = useState(false);
   const [timer, setTimer] = useState<TimerState>({
     isActive: false,
     timeLeft: 0,
     totalTime: 0,
     currentActivity: null
   });
+  const [stats, setStats] = useState({
+    streak: 0,
+    todayCount: 0,
+    totalMinutes: 0
+  });
+  const dailyGoal = 5;
+  const progressPercentage = (stats.todayCount / dailyGoal) * 100;
 
+  // Load resources - using mock data instead of Supabase
   useEffect(() => {
-    const loadTimer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(loadTimer);
+    const fetchResources = async () => {
+      try {
+        // Mock resources data
+        const mockResources: Resource[] = [
+          {
+            id: '1',
+            title: 'Understanding Anxiety: A Complete Guide',
+            description: 'Learn about anxiety disorders, symptoms, and effective coping strategies.',
+            type: 'article',
+            category: 'anxiety',
+            duration: '8 min read',
+            rating: 4.8,
+            featured: true,
+          },
+          {
+            id: '2',
+            title: 'Mindfulness Meditation for Beginners',
+            description: 'A guided meditation video to help you start your mindfulness journey.',
+            type: 'video',
+            category: 'meditation',
+            duration: '12 min',
+            rating: 4.9,
+            featured: true,
+          },
+          {
+            id: '3',
+            title: 'Stress Management Techniques',
+            description: 'Practical audio guide on managing stress in daily life.',
+            type: 'audio',
+            category: 'stress',
+            duration: '15 min',
+            rating: 4.7,
+            featured: false,
+          },
+          {
+            id: '4',
+            title: 'Depression Support Workbook',
+            description: 'Downloadable PDF with exercises and worksheets for depression support.',
+            type: 'pdf',
+            category: 'depression',
+            duration: '24 pages',
+            rating: 4.6,
+            featured: true,
+          },
+          {
+            id: '5',
+            title: 'Yoga for Mental Wellness',
+            description: 'Gentle yoga sequences to improve mental health and reduce stress.',
+            type: 'video',
+            category: 'yoga',
+            duration: '20 min',
+            rating: 4.8,
+            featured: false,
+          },
+          {
+            id: '6',
+            title: 'Building Resilience',
+            description: 'Learn how to build emotional resilience and bounce back from challenges.',
+            type: 'article',
+            category: 'wellness',
+            duration: '10 min read',
+            rating: 4.7,
+            featured: false,
+          }
+        ];
+        setResources(mockResources);
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchResources();
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      // Mock stats data - in a real app, this would fetch from your backend
+      setStats({
+        streak: 12,
+        todayCount: 3,
+        totalMinutes: 247
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const logActivity = async (type: string, title: string, details: any = {}) => {
+    try {
+      // Mock activity logging - in a real app, this would send to your backend
+      console.log(`Logging activity: ${type} - ${title}`, details);
+      // Refresh stats after logging
+      fetchStats();
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+    }
+  };
 
   // Timer effect
   useEffect(() => {
@@ -97,52 +210,16 @@ export const ResourcesAndSelfCare: React.FC = () => {
       }, 1000);
     } else if (timer.timeLeft === 0 && timer.isActive) {
       setTimer(prev => ({ ...prev, isActive: false }));
+      // Log activity completion
+      if (timer.currentActivity) {
+        const activity = activities.find(a => a.id === timer.currentActivity);
+        if (activity) {
+          logActivity(activity.category, `Completed: ${activity.title}`, { duration: activity.duration });
+        }
+      }
     }
     return () => clearInterval(interval);
-  }, [timer.isActive, timer.timeLeft]);
-
-  const resources: Resource[] = [
-    {
-      id: '1',
-      title: 'Understanding Anxiety: A Complete Guide',
-      description: 'Learn about anxiety disorders, symptoms, and effective coping strategies.',
-      type: 'article',
-      category: 'anxiety',
-      duration: '8 min read',
-      rating: 4.8,
-      featured: true,
-    },
-    {
-      id: '2',
-      title: 'Mindfulness Meditation for Beginners',
-      description: 'A guided meditation video to help you start your mindfulness journey.',
-      type: 'video',
-      category: 'wellness',
-      duration: '12 min',
-      rating: 4.9,
-      featured: true,
-    },
-    {
-      id: '3',
-      title: 'Stress Management Techniques',
-      description: 'Practical audio guide on managing stress in daily life.',
-      type: 'audio',
-      category: 'stress',
-      duration: '15 min',
-      rating: 4.7,
-      featured: false,
-    },
-    {
-      id: '4',
-      title: 'Depression Support Workbook',
-      description: 'Downloadable PDF with exercises and worksheets for depression support.',
-      type: 'pdf',
-      category: 'depression',
-      duration: '24 pages',
-      rating: 4.6,
-      featured: true,
-    }
-  ];
+  }, [timer.isActive, timer.timeLeft, timer.currentActivity]);
 
   const activities: Activity[] = [
     {
@@ -184,6 +261,26 @@ export const ResourcesAndSelfCare: React.FC = () => {
       difficulty: 'beginner',
       completed: true,
       streak: 5
+    },
+    {
+      id: '5',
+      title: 'Walking Meditation',
+      description: 'Mindful walking practice to connect with the present moment.',
+      duration: 20,
+      category: 'mindfulness',
+      difficulty: 'intermediate',
+      completed: false,
+      streak: 0
+    },
+    {
+      id: '6',
+      title: 'Progressive Muscle Relaxation',
+      description: 'Systematic tensing and relaxing of muscle groups.',
+      duration: 25,
+      category: 'meditation',
+      difficulty: 'advanced',
+      completed: false,
+      streak: 1
     }
   ];
 
@@ -191,6 +288,8 @@ export const ResourcesAndSelfCare: React.FC = () => {
     { id: 'all', label: 'All Resources', icon: BookOpen },
     { id: 'anxiety', label: 'Anxiety', icon: Brain },
     { id: 'depression', label: 'Depression', icon: Heart },
+    { id: 'meditation', label: 'Meditation', icon: Sparkles },
+    { id: 'yoga', label: 'Yoga', icon: Flower2 },
     { id: 'stress', label: 'Stress', icon: Shield },
     { id: 'wellness', label: 'Wellness', icon: Star },
     { id: 'general', label: 'General', icon: FileText }
@@ -204,6 +303,24 @@ export const ResourcesAndSelfCare: React.FC = () => {
     { id: 'journaling', label: 'Journaling', icon: Flower, color: 'from-green-500 to-teal-500' },
     { id: 'mindfulness', label: 'Mindfulness', icon: Moon, color: 'from-indigo-500 to-purple-500' }
   ];
+
+  const handleCategoryClick = (categoryId: string) => {
+    // Navigate to journal page for journaling category
+    if (categoryId === 'journaling') {
+      navigate('/journal');
+      return;
+    }
+    // Open breathing exercise for breathing category
+    if (categoryId === 'breathing') {
+      setIsBreathingOpen(true);
+      return;
+    }
+    setSelectedActivityCategory(categoryId);
+  };
+
+  const handleQuickRelax = () => {
+    setIsQuickRelaxOpen(true);
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -234,18 +351,36 @@ export const ResourcesAndSelfCare: React.FC = () => {
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+      resource.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedResourceCategory === 'all' || resource.category === selectedResourceCategory;
-    return matchesSearch && matchesCategory;
+
+    // Hide individual videos from the main list, keep only the collection container
+    const isHiddenVideo = resource.type === 'video' && resource.title !== 'Mindfulness Meditation for Beginners';
+
+    return matchesSearch && matchesCategory && !isHiddenVideo;
   });
 
-  const filteredActivities = selectedActivityCategory === 'all' 
-    ? activities 
+  const featuredResources = resources.filter(resource => resource.featured && (resource.type !== 'video' || resource.title === 'Mindfulness Meditation for Beginners'));
+
+  const filteredActivities = selectedActivityCategory === 'all'
+    ? activities
     : activities.filter(activity => activity.category === selectedActivityCategory);
 
-  const featuredResources = resources.filter(resource => resource.featured);
+  const handleResourceClick = (resource: Resource) => {
+    if (resource.title.includes('Building Resilience') || resource.title.includes('Resilience')) {
+      navigate('/resilience-article');
+    } else {
+      navigate(`/student-dashboard/resources/${resource.id}`);
+    }
+  };
 
   const startActivity = (activity: Activity) => {
+    // Navigate to journal page for journaling activities
+    if (activity.category === 'journaling') {
+      navigate('/journal');
+      return;
+    }
+
     setTimer({
       isActive: true,
       timeLeft: activity.duration * 60,
@@ -273,7 +408,29 @@ export const ResourcesAndSelfCare: React.FC = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progressPercentage = (completedToday / dailyGoal) * 100;
+  // Show Movement Exercises component when movement category is selected
+  if (selectedActivityCategory === 'movement') {
+    return <MovementExercises
+      onBack={() => setSelectedActivityCategory('all')}
+      onComplete={(name, duration) => logActivity('movement', `Completed: ${name}`, { duration })}
+    />;
+  }
+
+  // Show Mindfulness Activity component when mindfulness category is selected
+  if (selectedActivityCategory === 'mindfulness') {
+    return <MindfulnessActivity
+      onBack={() => setSelectedActivityCategory('all')}
+      onComplete={(name, duration) => logActivity('mindfulness', `Completed: ${name}`, { duration })}
+    />;
+  }
+
+  // Show Meditation Hub when meditation category is selected
+  if (selectedActivityCategory === 'meditation') {
+    return <MeditationHub
+      onBack={() => setSelectedActivityCategory('all')}
+      onComplete={(name, duration) => logActivity('meditation', `Completed: ${name}`, { duration })}
+    />;
+  }
 
   if (isLoading) {
     return (
@@ -290,12 +447,8 @@ export const ResourcesAndSelfCare: React.FC = () => {
     );
   }
 
-  if (isCommunityMode) {
-    return <Community onToggle={() => setIsCommunityMode(false)} />;
-  }
-
   return (
-    <DashboardLayout userType="student" onCommunityToggle={() => setIsCommunityMode(true)}>
+    <DashboardLayout userType="student">
       <div className="space-y-8 animate-fade-in">
         {/* Header */}
         <div className="glass-card p-8 text-center tilt-card">
@@ -305,7 +458,7 @@ export const ResourcesAndSelfCare: React.FC = () => {
           <p className="text-xl text-muted-foreground mb-6">
             Discover tools, activities, and guides to support your mental wellness journey
           </p>
-          
+
           {/* Search */}
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -318,6 +471,7 @@ export const ResourcesAndSelfCare: React.FC = () => {
           </div>
         </div>
 
+        {/* Main Tabs: Resources and Self-Care */}
         <Tabs defaultValue="resources" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 glass-card">
             <TabsTrigger value="resources" className="data-[state=active]:bg-white/30">
@@ -339,7 +493,7 @@ export const ResourcesAndSelfCare: React.FC = () => {
                   <Star className="w-6 h-6 text-wellness-warm" />
                   Featured Resources
                 </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   {featuredResources.map((resource, index) => {
                     const TypeIcon = getTypeIcon(resource.type);
                     return (
@@ -371,7 +525,10 @@ export const ResourcesAndSelfCare: React.FC = () => {
                               <span className="text-sm font-medium">{resource.rating}</span>
                             </div>
                           </div>
-                          <Button className="w-full btn-glass group-hover:bg-white/30">
+                          <Button
+                            className="w-full btn-glass group-hover:bg-white/30"
+                            onClick={() => handleResourceClick(resource)}
+                          >
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Access Resource
                           </Button>
@@ -383,67 +540,197 @@ export const ResourcesAndSelfCare: React.FC = () => {
               </div>
             )}
 
-            {/* All Resources */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResources.map((resource, index) => {
-                const TypeIcon = getTypeIcon(resource.type);
+            {/* Categories and All Resources */}
+            <Tabs value={selectedResourceCategory} onValueChange={setSelectedResourceCategory} className="space-y-6">
+              <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full glass-card overflow-x-auto">
+                {resourceCategories.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <TabsTrigger
+                      key={category.id}
+                      value={category.id}
+                      className="flex items-center gap-2 data-[state=active]:bg-white/30 min-w-[100px]"
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="hidden sm:inline">{category.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+
+              {resourceCategories.map((category) => (
+                <TabsContent key={category.id} value={category.id}>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredResources.map((resource, index) => {
+                      const TypeIcon = getTypeIcon(resource.type);
+                      return (
+                        <Card
+                          key={resource.id}
+                          className="glass-card border-0 hover:shadow-xl transition-all duration-300 cursor-pointer tilt-card group"
+                          style={{ animationDelay: `${index * 0.05}s` }}
+                        >
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${getTypeColor(resource.type)} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                                <TypeIcon className="w-5 h-5 text-white" />
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {resource.type}
+                              </Badge>
+                            </div>
+                            <CardTitle className="text-base">{resource.title}</CardTitle>
+                            <CardDescription className="text-sm line-clamp-2">{resource.description}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                {resource.duration}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                <span className="text-xs">{resource.rating}</span>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              className="w-full btn-glass"
+                              onClick={() => handleResourceClick(resource)}
+                            >
+                              View
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+
+                  {filteredResources.length === 0 && (
+                    <div className="text-center py-12">
+                      <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Resources Found</h3>
+                      <p className="text-muted-foreground">Try adjusting your search or category filters.</p>
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
+          </TabsContent>
+
+          {/* Self-Care Tab - Full content from SelfCareHub */}
+          <TabsContent value="selfcare" className="space-y-8">
+            {/* Welcome Banner */}
+            <div className="relative glass-card p-8 text-center tilt-card overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-wellness-calm/20 to-wellness-peaceful/20" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Sparkles className="w-6 h-6 text-wellness-warm" />
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-wellness-calm to-wellness-peaceful bg-clip-text text-transparent">
+                    Your Self-Care Journey
+                  </h1>
+                  <Sparkles className="w-6 h-6 text-wellness-warm" />
+                </div>
+                <p className="text-xl text-muted-foreground mb-6">
+                  Take a moment for yourself with personalized wellness activities
+                </p>
+
+                {/* Streak and Progress */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-6">
+                  <div className="flex items-center gap-3">
+                    <Star className="w-8 h-8 text-wellness-warm" />
+                    <div>
+                      <div className="text-2xl font-bold text-wellness-warm">{stats.streak} days</div>
+                      <div className="text-sm text-muted-foreground">Current streak</div>
+                    </div>
+                  </div>
+
+                  <div className="w-px h-16 bg-white/20 hidden md:block" />
+
+                  <div className="flex items-center gap-3">
+                    <Target className="w-8 h-8 text-wellness-calm" />
+                    <div>
+                      <div className="text-2xl font-bold text-wellness-calm">{stats.todayCount}/{dailyGoal}</div>
+                      <div className="text-sm text-muted-foreground">Today's progress</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="max-w-md mx-auto space-y-2">
+                  <Progress value={progressPercentage} className="h-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {progressPercentage >= 100
+                      ? "🎉 Daily goal achieved! Amazing work!"
+                      : `${dailyGoal - stats.todayCount} more activities to reach your goal`
+                    }
+                  </p>
+                </div>
+
+                {/* Quick Relax Button */}
+                <Button
+                  onClick={handleQuickRelax}
+                  className="mt-6 bg-gradient-to-r from-wellness-calm to-wellness-peaceful hover:from-wellness-calm/90 hover:to-wellness-peaceful/90 text-white border-0 px-8 py-3"
+                  size="lg"
+                >
+                  <Wind className="w-5 h-5 mr-2" />
+                  Quick Relax (2 min)
+                </Button>
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              {activityCategories.map((category) => {
+                const Icon = category.icon;
                 return (
-                  <Card
-                    key={resource.id}
-                    className="glass-card border-0 hover:shadow-xl transition-all duration-300 cursor-pointer tilt-card group"
-                    style={{ animationDelay: `${index * 0.05}s` }}
+                  <Button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                    variant={selectedActivityCategory === category.id ? "default" : "outline"}
+                    className={`btn-glass ${selectedActivityCategory === category.id ? 'bg-white/30' : ''}`}
                   >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${getTypeColor(resource.type)} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                          <TypeIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {resource.type}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-base">{resource.title}</CardTitle>
-                      <CardDescription className="text-sm">{resource.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {resource.duration}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs">{resource.rating}</span>
-                        </div>
-                      </div>
-                      <Button size="sm" className="w-full btn-glass">
-                        View
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    <Icon className="w-4 h-4 mr-2" />
+                    {category.label}
+                  </Button>
                 );
               })}
             </div>
-          </TabsContent>
 
-          {/* Self-Care Tab */}
-          <TabsContent value="selfcare" className="space-y-8">
-            {/* Daily Progress */}
-            <div className="glass-card p-6">
-              <h2 className="text-xl font-semibold mb-4">Daily Progress</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span>Daily Goal Progress</span>
-                  <span className="font-semibold">{completedToday}/{dailyGoal} activities</span>
-                </div>
-                <Progress value={progressPercentage} className="h-3" />
-                <p className="text-sm text-muted-foreground">
-                  {completedToday >= dailyGoal 
-                    ? "🎉 Goal achieved! Keep up the great work!" 
-                    : `${dailyGoal - completedToday} more activities to reach your daily goal`
-                  }
-                </p>
-              </div>
+            {/* Quick Stats */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="glass-card border-0 tilt-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Today's Activities</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-wellness-calm" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-wellness-calm">{stats.todayCount}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {progressPercentage >= 100 ? "Goal achieved!" : `${Math.max(0, dailyGoal - stats.todayCount)} remaining`}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-0 tilt-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+                  <Target className="h-4 w-4 text-wellness-serene" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-wellness-serene">{stats.streak}</div>
+                  <p className="text-xs text-muted-foreground">days in a row</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-0 tilt-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Minutes</CardTitle>
+                  <Award className="h-4 w-4 text-wellness-peaceful" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-wellness-peaceful">{stats.totalMinutes}</div>
+                  <p className="text-xs text-muted-foreground">total time</p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Active Timer */}
@@ -462,11 +749,11 @@ export const ResourcesAndSelfCare: React.FC = () => {
                   <div className="text-6xl font-mono font-bold text-wellness-calm">
                     {formatTime(timer.timeLeft)}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Progress 
-                      value={((timer.totalTime - timer.timeLeft) / timer.totalTime) * 100} 
-                      className="h-2" 
+                    <Progress
+                      value={((timer.totalTime - timer.timeLeft) / timer.totalTime) * 100}
+                      className="h-2"
                     />
                     <p className="text-sm text-muted-foreground">
                       {Math.round(((timer.totalTime - timer.timeLeft) / timer.totalTime) * 100)}% complete
@@ -497,125 +784,22 @@ export const ResourcesAndSelfCare: React.FC = () => {
               </Card>
             )}
 
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="glass-card border-0 tilt-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Today's Activities</CardTitle>
-                  <CheckCircle className="h-4 w-4 text-wellness-calm" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-wellness-calm">{completedToday}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {progressPercentage >= 100 ? "Goal achieved!" : `${dailyGoal - completedToday} remaining`}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-card border-0 tilt-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-                  <Target className="h-4 w-4 text-wellness-serene" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-wellness-serene">12</div>
-                  <p className="text-xs text-muted-foreground">days in a row</p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-card border-0 tilt-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Minutes</CardTitle>
-                  <Award className="h-4 w-4 text-wellness-peaceful" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-wellness-peaceful">247</div>
-                  <p className="text-xs text-muted-foreground">this week</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              {activityCategories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <Button
-                    key={category.id}
-                    onClick={() => setSelectedActivityCategory(category.id)}
-                    variant={selectedActivityCategory === category.id ? "default" : "outline"}
-                    className={`btn-glass ${selectedActivityCategory === category.id ? 'bg-white/30' : ''}`}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {category.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Activities Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredActivities.map((activity, index) => {
-                const category = activityCategories.find(c => c.id === activity.category);
-                const Icon = category?.icon || Heart;
-                const isActive = timer.currentActivity === activity.id;
-                
-                return (
-                  <Card
-                    key={activity.id}
-                    className={`glass-card border-0 hover:shadow-xl transition-all duration-500 cursor-pointer tilt-card group ${
-                      isActive ? 'ring-2 ring-wellness-calm bg-wellness-calm/10' : ''
-                    }`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${category?.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs ${getDifficultyColor(activity.difficulty)} text-white`}
-                          >
-                            {activity.difficulty}
-                          </Badge>
-                          {activity.completed && (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          )}
-                        </div>
-                      </div>
-                      <CardTitle className="text-lg">{activity.title}</CardTitle>
-                      <CardDescription>{activity.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Timer className="w-4 h-4" />
-                          {activity.duration} min
-                        </div>
-                        {activity.streak > 0 && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Calendar className="w-4 h-4 text-wellness-warm" />
-                            <span className="font-medium">{activity.streak}</span>
-                          </div>
-                        )}
-                      </div>
-                      <Button 
-                        className="w-full btn-glass group-hover:bg-white/30"
-                        onClick={() => startActivity(activity)}
-                        disabled={isActive}
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        {isActive ? 'In Progress' : 'Start Activity'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
           </TabsContent>
         </Tabs>
+
+        {/* Breathing Exercise Modals */}
+        <BreathingExercise
+          isOpen={isQuickRelaxOpen}
+          onClose={() => setIsQuickRelaxOpen(false)}
+          duration={120} // 2 minutes for quick relax
+          onComplete={(duration) => logActivity('breathing', 'Completed: Quick Relax', { duration })}
+        />
+
+        <BreathingExercise
+          isOpen={isBreathingOpen}
+          onClose={() => setIsBreathingOpen(false)}
+          onComplete={(duration) => logActivity('breathing', 'Completed: Breathing Exercise', { duration })}
+        />
       </div>
     </DashboardLayout>
   );
