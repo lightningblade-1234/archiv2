@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, Send, Bot, User } from 'lucide-react';
+import { Heart, Send, Bot, User, Mic } from 'lucide-react';
 import { processMessage } from '@/services/api';
 import { useStudent } from '@/contexts/StudentContext';
 
@@ -30,7 +30,12 @@ export const PersonalCare: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isCommunityMode, setIsCommunityMode] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -116,6 +121,101 @@ export const PersonalCare: React.FC = () => {
       handleSendMessage();
     }
   };
+
+  const handleMicClick = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      // Stop all tracks
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      return;
+    }
+
+    // Start recording
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        setIsRecording(false);
+        setIsProcessingAudio(true);
+
+        // Create blob and send to STT server
+        const blob = new Blob(audioChunksRef.current, { 
+          type: audioChunksRef.current[0]?.type || 'audio/webm' 
+        });
+
+        const formData = new FormData();
+        formData.append('audio', blob, 'audio.webm');
+
+        try {
+          const response = await fetch('http://127.0.0.1:5000/stt', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Server error' }));
+            throw new Error(error.error || `Server returned ${response.status}`);
+          }
+
+          const data = await response.json();
+          const transcribedText = data.text || '';
+          
+          if (transcribedText) {
+            setInputMessage(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
+          }
+        } catch (error: any) {
+          console.error('STT error:', error);
+          // Show error message to user
+          const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: `I couldn't process your voice input. ${error.message || 'Please try typing your message instead.'}`,
+            sender: 'haven',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        } finally {
+          setIsProcessingAudio(false);
+          // Clean up stream
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+          }
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error: any) {
+      console.error('Microphone access error:', error);
+      alert(`Microphone access denied or not available: ${error.message}`);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   if (isCommunityMode) {
     return <Community onToggle={() => setIsCommunityMode(false)} />;
@@ -210,6 +310,20 @@ export const PersonalCare: React.FC = () => {
                   className="flex-1 bg-gray-700/50 border border-gray-600 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20"
                   disabled={isTyping}
                 />
+                <Button
+                  onClick={handleMicClick}
+                  disabled={isTyping || isProcessingAudio}
+                  className={`rounded-full w-10 h-10 p-0 hover:scale-105 transition-transform duration-300 ${
+                    isRecording 
+                      ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                      : isProcessingAudio
+                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
+                  title={isRecording ? 'Stop recording' : isProcessingAudio ? 'Processing audio...' : 'Start voice input'}
+                >
+                  <Mic className="w-4 h-4" />
+                </Button>
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isTyping}
