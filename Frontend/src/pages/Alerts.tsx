@@ -154,8 +154,11 @@ export const Alerts = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1.2h</div>
-              <p className="text-xs text-muted-foreground">Average response</p>
+              <div className="text-2xl font-bold">--</div>
+              <p className="text-xs text-muted-foreground">
+                {/* TODO: Calculate average response time from alert data */}
+                Average response time
+              </p>
             </CardContent>
           </Card>
         </div>

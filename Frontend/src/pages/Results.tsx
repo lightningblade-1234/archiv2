@@ -1,4 +1,24 @@
-import React from 'react';
+/**
+ * Results & Alerts Component
+ * 
+ * This component displays:
+ * - Assessment results from students
+ * - Alerts generated from assessments
+ * 
+ * IMPLEMENTATION NOTES:
+ * - All mock data has been removed and replaced with empty state arrays
+ * - Data type templates are defined below for reference
+ * - TODO: Implement real API calls to populate data
+ * - UI components handle empty states gracefully
+ * 
+ * To implement real data:
+ * 1. Use getAssessmentHistory() from api.ts for assessment results
+ * 2. Use getPendingAlerts() from api.ts for alerts
+ * 3. Create API endpoint for statistics (e.g., /api/admin/assessment-stats)
+ * 4. Transform API responses to match the type templates
+ */
+
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,123 +26,135 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Download, Filter, TrendingDown, TrendingUp, AlertTriangle, Bell, Clock, Eye, MessageCircle, Shield } from 'lucide-react';
+import { getAssessmentHistory, getPendingAlerts } from '@/services/api';
+
+// ============================================================================
+// DATA TYPE TEMPLATES - Replace with real API calls
+// ============================================================================
+
+/**
+ * Assessment Result Data Template
+ * Expected format (from getAssessmentHistory API):
+ * {
+ *   id: number,
+ *   type: string,              // "PHQ9", "GAD7", "CSSRS", etc.
+ *   score: number,             // Assessment score
+ *   severity: string | null,   // "Low" | "Mild" | "Moderate" | "High" | null
+ *   administered_at: string,   // ISO date string
+ *   trigger_reason: string | null,
+ *   responses: Record<string, any> | null
+ * }
+ */
+type AssessmentResult = {
+  id: number;
+  student_id: string;
+  studentName?: string;
+  testType: string;
+  score: number;
+  riskLevel: string;
+  completedAt: string;
+  trend?: "increased" | "decreased" | "stable";
+};
+
+/**
+ * Alert Data Template
+ * Expected format (from getPendingAlerts API):
+ * {
+ *   id: number,
+ *   student_id: string,
+ *   studentName: string,
+ *   type: string,
+ *   severity: string,          // "Critical" | "High" | "Medium" | "Low"
+ *   message: string,
+ *   status: string,            // "Unread" | "In Review" | "Acknowledged" | "Read"
+ *   triggeredAt: string,       // ISO date string
+ *   actionRequired: string,
+ *   testType: string
+ * }
+ */
+type AlertData = {
+  id: number;
+  student_id: string;
+  studentName: string;
+  type: string;
+  severity: string;
+  message: string;
+  status: string;
+  triggeredAt: string;
+  actionRequired: string;
+  testType: string;
+};
+
+/**
+ * Results Statistics Template
+ * Expected format:
+ * {
+ *   totalResults: number,
+ *   highRisk: number,
+ *   avgScore: number,
+ *   followUps: number
+ * }
+ */
+type ResultsStats = {
+  totalResults: number;
+  highRisk: number;
+  avgScore: number;
+  followUps: number;
+};
+
+/**
+ * Alerts Statistics Template
+ * Expected format:
+ * {
+ *   totalAlerts: number,
+ *   critical: number,
+ *   unread: number,
+ *   avgResponseTime: string    // e.g., "1.2h"
+ * }
+ */
+type AlertsStats = {
+  totalAlerts: number;
+  critical: number;
+  unread: number;
+  avgResponseTime: string;
+};
 
 export const Results = () => {
-  const recentResults = [
-    {
-      id: 1,
-      studentName: "Sarah Johnson",
-      studentId: "ST2024001",
-      testType: "Depression Screening (PHQ-9)",
-      score: 12,
-      riskLevel: "Moderate",
-      completedAt: "2024-01-15 10:30 AM",
-      trend: "increased"
-    },
-    {
-      id: 2,
-      studentName: "Michael Chen",
-      studentId: "ST2024002", 
-      testType: "Anxiety Assessment (GAD-7)",
-      score: 8,
-      riskLevel: "Mild",
-      completedAt: "2024-01-15 09:15 AM",
-      trend: "stable"
-    },
-    {
-      id: 3,
-      studentName: "Emily Rodriguez",
-      studentId: "ST2024003",
-      testType: "Stress Level Evaluation",
-      score: 15,
-      riskLevel: "High",
-      completedAt: "2024-01-14 02:45 PM",
-      trend: "increased"
-    },
-    {
-      id: 4,
-      studentName: "David Thompson",
-      studentId: "ST2024004",
-      testType: "Sleep Quality Index",
-      score: 4,
-      riskLevel: "Low",
-      completedAt: "2024-01-14 11:20 AM",
-      trend: "decreased"
-    },
-    {
-      id: 5,
-      studentName: "Lisa Wang",
-      studentId: "ST2024005",
-      testType: "Depression Screening (PHQ-9)",
-      score: 18,
-      riskLevel: "High",
-      completedAt: "2024-01-13 04:10 PM",
-      trend: "increased"
-    }
-  ];
+  // ============================================================================
+  // STATE VARIABLES - Replace with real API data
+  // ============================================================================
+  
+  const [recentResults, setRecentResults] = useState<AssessmentResult[]>([]);
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [resultsStats, setResultsStats] = useState<ResultsStats | null>(null);
+  const [alertsStats, setAlertsStats] = useState<AlertsStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const alerts = [
-    {
-      id: 1,
-      type: "High Risk Score",
-      severity: "Critical",
-      studentName: "Emily Rodriguez",
-      studentId: "ST2024003",
-      message: "Depression screening score of 18 indicates severe depression symptoms",
-      triggeredAt: "2024-01-15 11:45 AM",
-      status: "Unread",
-      actionRequired: "Immediate intervention recommended",
-      testType: "PHQ-9"
-    },
-    {
-      id: 2,
-      type: "Crisis Keywords",
-      severity: "Critical", 
-      studentName: "Marcus Johnson",
-      studentId: "ST2024007",
-      message: "Self-harm keywords detected in assessment responses",
-      triggeredAt: "2024-01-15 10:20 AM",
-      status: "In Review",
-      actionRequired: "Contact student immediately",
-      testType: "Custom Assessment"
-    },
-    {
-      id: 3,
-      type: "Missed Appointments",
-      severity: "High",
-      studentName: "Sarah Chen",
-      studentId: "ST2024001",
-      message: "Student has missed 3 consecutive counseling appointments",
-      triggeredAt: "2024-01-14 03:30 PM",
-      status: "Acknowledged",
-      actionRequired: "Follow-up contact needed",
-      testType: "Attendance Tracking"
-    },
-    {
-      id: 4,
-      type: "Score Deterioration",
-      severity: "Medium",
-      studentName: "Alex Thompson",
-      studentId: "ST2024005",
-      message: "Anxiety scores increased by 40% over past 2 weeks",
-      triggeredAt: "2024-01-14 09:15 AM",
-      status: "Read",
-      actionRequired: "Schedule check-in session",
-      testType: "GAD-7"
-    },
-    {
-      id: 5,
-      type: "Repeated Testing",
-      severity: "Low",
-      studentName: "Jessica Wang",
-      studentId: "ST2024009",
-      message: "Student completed same assessment 5 times in 24 hours",
-      triggeredAt: "2024-01-13 07:45 PM",
-      status: "Read",
-      actionRequired: "Monitor for unusual behavior",
-      testType: "Stress Assessment"
-    }
-  ];
+  useEffect(() => {
+    // TODO: Replace with real API calls
+    const fetchData = async () => {
+      try {
+        // Example: Fetch alerts
+        // const alertsData = await getPendingAlerts(20);
+        // setAlerts(alertsData);
+        
+        // Example: Fetch assessment results
+        // const resultsData = await getAssessmentHistory("student_id", "PHQ9", 20);
+        // Transform and set recentResults
+        
+        // Example: Fetch statistics
+        // const stats = await fetch('/api/admin/assessment-stats').then(r => r.json());
+        // setResultsStats(stats);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching results data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const getRiskColor = (level: string) => {
     switch (level) {
@@ -210,8 +242,12 @@ export const Results = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">164</div>
-                  <p className="text-xs text-muted-foreground">+12 from yesterday</p>
+                  <div className="text-2xl font-bold">
+                    {resultsStats ? resultsStats.totalResults : '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {resultsStats ? 'Assessment results' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
               
@@ -221,8 +257,12 @@ export const Results = () => {
                   <TrendingUp className="h-4 w-4 text-red-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">12</div>
-                  <p className="text-xs text-muted-foreground">7.3% of total</p>
+                  <div className="text-2xl font-bold text-red-600">
+                    {resultsStats ? resultsStats.highRisk : '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {resultsStats ? 'High risk assessments' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -232,8 +272,12 @@ export const Results = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">6.8</div>
-                  <p className="text-xs text-muted-foreground">-0.2 from last week</p>
+                  <div className="text-2xl font-bold">
+                    {resultsStats ? resultsStats.avgScore.toFixed(1) : '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {resultsStats ? 'Average assessment score' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -243,8 +287,12 @@ export const Results = () => {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">8</div>
-                  <p className="text-xs text-muted-foreground">Require attention</p>
+                  <div className="text-2xl font-bold">
+                    {resultsStats ? resultsStats.followUps : '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {resultsStats ? 'Require attention' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -258,47 +306,59 @@ export const Results = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentResults.map((result) => (
-                    <div key={result.id} className="flex items-center justify-between p-4 rounded-lg border border-white/20 hover:bg-white/5 transition-all">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarFallback className="bg-gradient-primary text-white">
-                            {result.studentName.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{result.studentName}</p>
-                          <p className="text-sm text-muted-foreground">{result.studentId}</p>
+                {recentResults.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium mb-2">No assessment results</p>
+                    <p className="text-muted-foreground">
+                      Assessment results will appear here when students complete screenings
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentResults.map((result) => (
+                      <div key={result.id} className="flex items-center justify-between p-4 rounded-lg border border-white/20 hover:bg-white/5 transition-all">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarFallback className="bg-gradient-primary text-white">
+                              {(result.studentName || result.student_id).split(' ').map(n => n[0]).join('').substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{result.studentName || result.student_id}</p>
+                            <p className="text-sm text-muted-foreground">{result.student_id}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <p className="font-medium">{result.testType}</p>
+                            <p className="text-sm text-muted-foreground">{result.completedAt}</p>
+                          </div>
+                          
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-wellness-calm">{result.score}</p>
+                            <p className="text-xs text-muted-foreground">Score</p>
+                          </div>
+                          
+                          <Badge className={getRiskColor(result.riskLevel)}>
+                            {result.riskLevel}
+                          </Badge>
+                          
+                          {result.trend && (
+                            <div className="flex items-center">
+                              {getTrendIcon(result.trend)}
+                            </div>
+                          )}
+                          
+                          <Button size="sm" variant="outline">
+                            View Details
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="font-medium">{result.testType}</p>
-                          <p className="text-sm text-muted-foreground">{result.completedAt}</p>
-                        </div>
-                        
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-wellness-calm">{result.score}</p>
-                          <p className="text-xs text-muted-foreground">Score</p>
-                        </div>
-                        
-                        <Badge className={getRiskColor(result.riskLevel)}>
-                          {result.riskLevel}
-                        </Badge>
-                        
-                        <div className="flex items-center">
-                          {getTrendIcon(result.trend)}
-                        </div>
-                        
-                        <Button size="sm" variant="outline">
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -312,8 +372,12 @@ export const Results = () => {
                   <Bell className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">23</div>
-                  <p className="text-xs text-muted-foreground">+7 from yesterday</p>
+                  <div className="text-2xl font-bold">
+                    {alertsStats ? alertsStats.totalAlerts : alerts.length || '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {alertsStats ? 'Total alerts' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
               
@@ -323,8 +387,12 @@ export const Results = () => {
                   <AlertTriangle className="h-4 w-4 text-red-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">5</div>
-                  <p className="text-xs text-muted-foreground">Immediate attention</p>
+                  <div className="text-2xl font-bold text-red-600">
+                    {alertsStats ? alertsStats.critical : alerts.filter(a => a.severity === 'Critical').length || '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {alertsStats ? 'Immediate attention' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -334,8 +402,12 @@ export const Results = () => {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">8</div>
-                  <p className="text-xs text-muted-foreground">Require review</p>
+                  <div className="text-2xl font-bold">
+                    {alertsStats ? alertsStats.unread : alerts.filter(a => a.status === 'Unread').length || '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {alertsStats ? 'Require review' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -345,8 +417,12 @@ export const Results = () => {
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1.2h</div>
-                  <p className="text-xs text-muted-foreground">Average response</p>
+                  <div className="text-2xl font-bold">
+                    {alertsStats ? alertsStats.avgResponseTime : '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {alertsStats ? 'Average response' : 'Data not available'}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -367,85 +443,95 @@ export const Results = () => {
             </div>
 
             {/* Alerts List */}
-            <div className="space-y-4">
-              {alerts.map((alert) => (
-                <Card key={alert.id} className={`glass-card tilt-card transition-all ${alert.status === 'Unread' ? 'ring-2 ring-red-500/20' : ''}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="mt-1">
-                          {getSeverityIcon(alert.severity)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <CardTitle className="text-lg">{alert.type}</CardTitle>
-                            <Badge className={getSeverityColor(alert.severity)}>
-                              {alert.severity}
-                            </Badge>
-                            <Badge className={getStatusColor(alert.status)}>
-                              {alert.status}
-                            </Badge>
+            {alerts.length === 0 ? (
+              <Card className="glass-card">
+                <CardContent className="py-12 text-center">
+                  <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium mb-2">No alerts</p>
+                  <p className="text-muted-foreground">All clear! No pending alerts at this time.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {alerts.map((alert) => (
+                  <Card key={alert.id} className={`glass-card tilt-card transition-all ${alert.status === 'Unread' ? 'ring-2 ring-red-500/20' : ''}`}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4">
+                          <div className="mt-1">
+                            {getSeverityIcon(alert.severity)}
                           </div>
-                          <div className="flex items-center space-x-4 mb-2">
-                            <Avatar className="w-8 h-8">
-                              <AvatarFallback className="bg-gradient-primary text-white text-xs">
-                                {alert.studentName.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-sm">{alert.studentName}</p>
-                              <p className="text-xs text-muted-foreground">{alert.studentId}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <CardTitle className="text-lg">{alert.type}</CardTitle>
+                              <Badge className={getSeverityColor(alert.severity)}>
+                                {alert.severity}
+                              </Badge>
+                              <Badge className={getStatusColor(alert.status)}>
+                                {alert.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-4 mb-2">
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback className="bg-gradient-primary text-white text-xs">
+                                  {alert.studentName.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm">{alert.studentName}</p>
+                                <p className="text-xs text-muted-foreground">{alert.student_id}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-sm">{alert.message}</p>
-                      
-                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                          Action Required: {alert.actionRequired}
-                        </p>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="w-4 h-4 text-muted-foreground" />
-                          <span>Triggered: {alert.triggeredAt}</span>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <p className="text-sm">{alert.message}</p>
+                        
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                            Action Required: {alert.actionRequired}
+                          </p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Shield className="w-4 h-4 text-muted-foreground" />
-                          <span>Source: {alert.testType}</span>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-4 h-4 text-muted-foreground" />
+                            <span>Triggered: {alert.triggeredAt}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Shield className="w-4 h-4 text-muted-foreground" />
+                            <span>Source: {alert.testType}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t border-white/20">
+                          <div className="flex space-x-2">
+                            <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                              <AlertTriangle className="w-4 h-4 mr-1" />
+                              Take Action
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <MessageCircle className="w-4 h-4 mr-1" />
+                              Contact Student
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                          </div>
+                          <Button size="sm" variant="ghost" className="text-muted-foreground">
+                            Dismiss
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between pt-4 border-t border-white/20">
-                        <div className="flex space-x-2">
-                          <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                            <AlertTriangle className="w-4 h-4 mr-1" />
-                            Take Action
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            Contact Student
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-4 h-4 mr-1" />
-                            View Details
-                          </Button>
-                        </div>
-                        <Button size="sm" variant="ghost" className="text-muted-foreground">
-                          Dismiss
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

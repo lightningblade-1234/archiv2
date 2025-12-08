@@ -105,6 +105,23 @@ class RiskCalculator:
             logger.info("risk_profile_saved_successfully",
                        student_id=student_id)
             
+            # Save temporal patterns if detected (Solution 7 Fix)
+            if temporal_patterns.get("patterns") and not temporal_patterns.get("use_snapshot_only", False):
+                try:
+                    self.temporal_analyzer.save_temporal_pattern(
+                        student_id,
+                        temporal_patterns
+                    )
+                    logger.info("temporal_patterns_saved",
+                               student_id=student_id,
+                               patterns=temporal_patterns.get("patterns"))
+                except Exception as e:
+                    logger.error("temporal_patterns_save_failed",
+                                student_id=student_id,
+                                error=str(e),
+                                exc_info=True)
+                    # Don't fail the entire risk calculation if pattern save fails
+            
             # Generate alert recommendation
             alert_rec = self._generate_alert_recommendation(risk_profile)
             

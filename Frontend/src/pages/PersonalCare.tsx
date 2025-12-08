@@ -39,7 +39,7 @@ export const PersonalCare: React.FC = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -54,17 +54,14 @@ export const PersonalCare: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // Use student ID from context, or default to a test ID
       const currentStudentId = studentId || 'student123';
 
-      // Call the backend API to get LLM response
       const response = await processMessage({
         student_id: currentStudentId,
         message_text: currentMessage,
         metadata: {},
       });
 
-      // Get the AI response from the backend
       const aiResponseText = response.response_text || 
         "I understand. How can I help you further?";
       
@@ -77,17 +74,33 @@ export const PersonalCare: React.FC = () => {
 
       setMessages(prev => [...prev, havenMessage]);
 
-      // Handle crisis protocol
+      // Handle crisis protocol - discreetly logged, no popup for students
       if (response.crisis_protocol_triggered) {
-        alert('⚠️ Crisis protocol activated. Please contact emergency services immediately.\n\nCrisis Text Line: Text HOME to 741741\nNational Suicide Prevention Lifeline: 988');
+        console.log('Crisis protocol triggered - alert sent to admin dashboard');
       } else if (response.concern_indicators && response.concern_indicators.length > 0) {
         console.log('Concern indicators detected:', response.concern_indicators);
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
+      
+      // Provide more detailed error message
+      let errorContent = 'I apologize, but I encountered an error connecting to the AI. ';
+      
+      if (error.message) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorContent += 'The backend server appears to be offline. Please make sure the backend is running on http://localhost:8000';
+        } else if (error.message.includes('500')) {
+          errorContent += 'The backend encountered an internal error. Please check the backend logs for more details.';
+        } else {
+          errorContent += `Error: ${error.message}`;
+        }
+      } else {
+        errorContent += 'Please make sure the backend is running and try again.';
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: 'I apologize, but I encountered an error connecting to the AI. Please make sure the backend is running and try again.',
+        content: errorContent,
         sender: 'haven',
         timestamp: new Date()
       };

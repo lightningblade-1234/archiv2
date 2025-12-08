@@ -47,6 +47,15 @@ class Alert(Base, TimestampMixin):
     routing_status = Column(String, default="PENDING")  # "PENDING", "REVIEWED", "RESOLVED"
     counselor_id = Column(String)
     reviewed_at = Column(DateTime)
+    
+    # Outcome tracking fields
+    counseling_appointment_scheduled = Column(Boolean, default=False)
+    counseling_appointment_attended = Column(Boolean, nullable=True)
+    appointment_scheduled_at = Column(DateTime, nullable=True)
+    appointment_attended_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    outcome = relationship("InterventionOutcome", back_populates="alert", uselist=False)
 
 
 

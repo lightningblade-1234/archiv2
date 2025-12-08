@@ -169,22 +169,22 @@ class TemporalAnalyzer:
         scores = [h["risk_score"] for h in history]
         dates = [h["date"] for h in history]
         
-        # Rapid deterioration
-        patterns["rapid_deterioration"] = velocity < -0.5 and acceleration < 0
+        # Rapid deterioration - convert to native Python bool
+        patterns["rapid_deterioration"] = bool(velocity < -0.5 and acceleration < 0)
         
         # Pre-decision calm (sudden improvement after sustained distress)
-        patterns["pre_decision_calm"] = self._detect_pre_decision_calm(history)
+        patterns["pre_decision_calm"] = bool(self._detect_pre_decision_calm(history))
         
-        # Chronic elevated
-        mean_score = np.mean(scores)
-        std_score = np.std(scores)
-        patterns["chronic_elevated"] = mean_score > 2.5 and std_score < 0.5
+        # Chronic elevated - convert numpy bool_ to native Python bool
+        mean_score = float(np.mean(scores))
+        std_score = float(np.std(scores))
+        patterns["chronic_elevated"] = bool(mean_score > 2.5 and std_score < 0.5)
         
         # Cyclical pattern (possible bipolar indicator)
-        patterns["cyclical"] = self._detect_cyclical_pattern(scores)
+        patterns["cyclical"] = bool(self._detect_cyclical_pattern(scores))
         
         # Disengagement
-        patterns["disengagement"] = self._detect_disengagement(history[0]["date"], dates)
+        patterns["disengagement"] = bool(self._detect_disengagement(history[0]["date"], dates))
         
         return patterns
     
@@ -272,18 +272,53 @@ class TemporalAnalyzer:
         """Save detected temporal pattern to database."""
         from app.models.analysis import TemporalPattern
         
-        for pattern_type, detected in pattern_data.get("pattern_details", {}).items():
-            if detected:
-                pattern = TemporalPattern(
-                    student_id=student_id,
-                    pattern_type=pattern_type,
-                    detected_at=datetime.utcnow(),
-                    pattern_data=pattern_data,
-                    risk_multiplier=pattern_data.get("risk_multiplier", 1.0)
-                )
-                self.db.add(pattern)
+        # Convert numpy types and datetime objects to native Python types for JSON serialization
+        def convert_numpy_types(obj):
+            """Recursively convert numpy types and datetime objects to native Python types."""
+            if isinstance(obj, np.integer):
+                return int(obj)
+            elif isinstance(obj, np.floating):
+                return float(obj)
+            elif isinstance(obj, np.bool_):
+                return bool(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, datetime):
+                return obj.isoformat()
+            elif isinstance(obj, dict):
+                return {key: convert_numpy_types(value) for key, value in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_numpy_types(item) for item in obj]
+            return obj
         
-        self.db.commit()
+        # Convert pattern_data to ensure all numpy types are converted
+        serializable_pattern_data = convert_numpy_types(pattern_data)
+        
+        try:
+            for pattern_type, detected in pattern_data.get("pattern_details", {}).items():
+                # Convert numpy bool_ to Python bool
+                if isinstance(detected, np.bool_):
+                    detected = bool(detected)
+                
+                if detected:
+                    pattern = TemporalPattern(
+                        student_id=student_id,
+                        pattern_type=pattern_type,
+                        detected_at=datetime.utcnow(),
+                        pattern_data=serializable_pattern_data,
+                        risk_multiplier=float(pattern_data.get("risk_multiplier", 1.0))
+                    )
+                    self.db.add(pattern)
+            
+            self.db.commit()
+        except Exception as e:
+            # Don't rollback here - it would rollback the entire outer transaction
+            # Just log the error and re-raise - the outer handler (risk_calculator) will catch it
+            logger.error("temporal_patterns_save_failed",
+                        student_id=student_id,
+                        error=str(e),
+                        exc_info=True)
+            raise
 
 
 

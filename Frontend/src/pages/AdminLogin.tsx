@@ -7,10 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InteractiveBackground } from '@/components/InteractiveBackground';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { loginStudent } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 export const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,13 +22,37 @@ export const AdminLogin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsLoading(false);
-    navigate('/admin-dashboard');
+    try {
+      const response = await loginStudent({
+        email: formData.email,
+        password: formData.password
+      });
+      
+      // Store authentication data
+      localStorage.setItem('admin_token', response.token);
+      localStorage.setItem('admin_email', response.email);
+      localStorage.setItem('admin_id', response.student_id);
+      
+      toast({
+        title: "Welcome back!",
+        description: `Logged in as ${response.email}`,
+      });
+      
+      setIsLoading(false);
+      navigate('/admin-dashboard');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Authentication failed. Please try again.';
+      setError(errorMessage);
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +127,12 @@ export const AdminLogin: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                {error && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md border border-red-200 dark:border-red-800">
+                    {error}
+                  </div>
+                )}
 
                 <Button
                   type="submit"

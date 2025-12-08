@@ -73,5 +73,37 @@ class CSSRSRequest(BaseModel):
     )
 
 
+class AssessmentItem(BaseModel):
+    """Individual assessment record."""
+    id: int
+    type: str
+    score: int
+    severity: Optional[str]
+    administered_at: datetime
+    trigger_reason: Optional[str]
+    responses: Optional[Dict]
+    counselor_reviewed: bool = False
+    follow_up_scheduled: bool = False
+
+
+class TrajectoryAnalysis(BaseModel):
+    """Trajectory analysis from linear regression."""
+    direction: str  # "improving", "worsening", "stable"
+    slope: float
+    statistical_significance: bool
+    first_score: int
+    latest_score: int
+    change: int
+    change_percentage: float
+
+
+class AssessmentHistoryResponse(BaseModel):
+    """Assessment history with trajectory."""
+    student_id: str
+    total_assessments: int
+    assessments: List[AssessmentItem]
+    trajectory: Optional[TrajectoryAnalysis]
+
+
 
 

@@ -18,12 +18,14 @@ class Student(Base, TimestampMixin):
     baseline_profile = Column(JSON, default=dict)  # Communication style, typical patterns
     session_count = Column(Integer, default=0)
     last_checkpoint_date = Column(String)  # ISO date string
+    is_admin = Column(Boolean, default=False, nullable=False)  # Admin/counselor flag
     
     # Relationships
     sessions = relationship("Session", back_populates="student")
     assessments = relationship("Assessment", back_populates="student")
     risk_profiles = relationship("RiskProfile", back_populates="student")
     feedback = relationship("CounselorFeedback", back_populates="student")
+    outcomes = relationship("InterventionOutcome", back_populates="student")
 
 
 class Session(Base, TimestampMixin):

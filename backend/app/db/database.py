@@ -6,7 +6,7 @@ from app.models.base import Base
 
 # Import all models to ensure relationships are properly registered
 # Import in order: student first (base), then others that reference it
-from app.models import student, assessment, analysis, learning
+from app.models import student, assessment, analysis, learning, intervention_outcome
 
 engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
