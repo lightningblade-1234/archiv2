@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export interface MessageRequest {
   student_id: string;
@@ -80,6 +80,50 @@ export async function processMessage(data: MessageRequest): Promise<MessageRespo
   return await response.json();
 }
 
+// Get risk profile
+
+
+// Session and chat history interfaces
+export interface Session {
+  id: number;
+  session_number: number;
+  created_at: string;
+  message_count: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  content: string;
+  sender: string;
+  timestamp: string;
+}
+
+// Get all sessions
+
+// Get risk profile for a student
+export async function getSessions(studentId: string): Promise<Session[]> {
+  const response = await fetch(`${API_BASE_URL}/messages/sessions?student_id=${studentId}`);
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch sessions' }));
+    throw new Error(error.detail || 'Failed to fetch sessions');
+  }
+  
+  return await response.json();
+}
+
+// Get messages from a specific session
+export async function getSessionMessages(sessionId: number, studentId: string): Promise<ChatMessage[]> {
+  const response = await fetch(`${API_BASE_URL}/messages/sessions/${sessionId}/messages?student_id=${studentId}`);
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch session messages' }));
+    throw new Error(error.detail || 'Failed to fetch session messages');
+  }
+  
+  return await response.json();
+}
+
 // Get risk profile for a student
 export async function getRiskProfile(studentId: string): Promise<RiskProfile> {
   const response = await fetch(`${API_BASE_URL}/alerts/risk-profile/${studentId}`);
@@ -94,7 +138,9 @@ export async function getRiskProfile(studentId: string): Promise<RiskProfile> {
   return await response.json();
 }
 
-// Get message analyses for a student
+// Get message analyses
+
+// Get risk profile for a student
 export async function getMessageAnalyses(studentId: string, limit: number = 10) {
   const response = await fetch(`${API_BASE_URL}/messages/analysis/${studentId}?limit=${limit}`);
 

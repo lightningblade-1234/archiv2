@@ -1,15 +1,36 @@
 """Message processing API endpoints."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from typing import List, Optional
 from app.schemas.message import Message, MessageAnalysis
 from app.services.analysis.sequential_processor import SequentialProcessor
 from app.services.assessment.hybrid_assessment import HybridAssessmentService
 from app.db.database import get_db
 from app.core.llm_client import get_llm_client
+from app.models.student import Session as SessionModel
+from pydantic import BaseModel
+from datetime import datetime
 import structlog
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/api/messages", tags=["messages"])
+
+
+class SessionResponse(BaseModel):
+    id: int
+    session_number: int
+    created_at: datetime
+    message_count: int
+    
+    class Config:
+        from_attributes = True
+
+
+class ChatMessage(BaseModel):
+    id: str
+    content: str
+    sender: str
+    timestamp: str
 
 
 @router.post("/process", response_model=MessageAnalysis)
@@ -95,6 +116,44 @@ async def get_message_analyses(
         "safety_flags": a.safety_flags,
         "created_at": a.created_at.isoformat()
     } for a in analyses]
+
+
+@router.get("/sessions", response_model=List[SessionResponse])
+async def get_sessions(
+    student_id: str = Query(..., description="Student ID"),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    """Get all sessions for a student."""
+    sessions = db.query(SessionModel).filter(
+        SessionModel.student_id == student_id
+    ).order_by(SessionModel.created_at.desc()).limit(limit).all()
+    
+    return [SessionResponse(
+        id=s.id,
+        session_number=s.session_number,
+        created_at=s.created_at,
+        message_count=len(s.messages) if s.messages else 0
+    ) for s in sessions]
+
+
+@router.get("/sessions/{session_id}/messages", response_model=List[ChatMessage])
+async def get_session_messages(
+    session_id: int,
+    student_id: str = Query(..., description="Student ID"),
+    db: Session = Depends(get_db)
+):
+    """Get all messages from a specific session."""
+    session = db.query(SessionModel).filter(
+        SessionModel.id == session_id,
+        SessionModel.student_id == student_id
+    ).first()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    messages = session.messages if session.messages else []
+    return [ChatMessage(**msg) for msg in messages]
 
 
 

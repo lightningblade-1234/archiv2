@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, Send, Bot, User, Mic } from 'lucide-react';
-import { processMessage } from '@/services/api';
+import { Heart, Send, Bot, User, Mic, MessageSquare, Clock, X, Download } from 'lucide-react';
+import { processMessage, getSessions, getSessionMessages, Session, ChatMessage as ApiChatMessage } from '@/services/api';
 import { useStudent } from '@/contexts/StudentContext';
 
 interface Message {
@@ -32,6 +32,10 @@ export const PersonalCare: React.FC = () => {
   const [isCommunityMode, setIsCommunityMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [showPreviousChats, setShowPreviousChats] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -42,6 +46,157 @@ export const PersonalCare: React.FC = () => {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Load sessions on mount
+  useEffect(() => {
+    const loadSessions = async () => {
+      if (!studentId) return;
+      
+      setIsLoadingSessions(true);
+      try {
+        const sessionsData = await getSessions(studentId);
+        setSessions(sessionsData);
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+      } finally {
+        setIsLoadingSessions(false);
+      }
+    };
+
+    loadSessions();
+  }, [studentId]);
+
+  // Load messages when a session is selected
+  const handleSelectSession = async (sessionId: number) => {
+    if (!studentId) return;
+    
+    setSelectedSessionId(sessionId);
+    setIsTyping(true);
+    
+    try {
+      const sessionMessages = await getSessionMessages(sessionId, studentId);
+      const convertedMessages: Message[] = sessionMessages.map((msg: ApiChatMessage) => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender === 'user' ? 'user' : 'haven',
+        timestamp: new Date(msg.timestamp)
+      }));
+      setMessages(convertedMessages);
+      setShowPreviousChats(false);
+    } catch (error) {
+      console.error('Error loading session messages:', error);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  // Start new chat
+  const handleNewChat = () => {
+    setSelectedSessionId(null);
+    setMessages([
+      {
+        id: '1',
+        content: "Hello! I'm Haven, your personal mental health companion. I'm here to listen, support, and guide you on your wellness journey. How are you feeling today?",
+        sender: 'haven',
+        timestamp: new Date()
+      }
+    ]);
+    setShowPreviousChats(false);
+  };
+
+  // Export chat function
+  const handleExportChat = () => {
+    if (messages.length === 0) {
+      alert('No messages to export');
+      return;
+    }
+
+    try {
+
+    const sessionInfo = selectedSessionId 
+      ? sessions.find(s => s.id === selectedSessionId)
+      : null;
+
+    // Create a readable text format
+    const textContent = `Haven Personal Care Chat Export
+${sessionInfo ? `Session #${sessionInfo.session_number}` : 'Current Session'}
+${sessionInfo ? `Date: ${new Date(sessionInfo.created_at).toLocaleString('en-US', { 
+  month: 'long', 
+  day: 'numeric', 
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})}` : `Exported: ${new Date().toLocaleString('en-US', { 
+  month: 'long', 
+  day: 'numeric', 
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})}`}
+${'='.repeat(60)}
+
+${messages.map((msg, index) => {
+  const sender = msg.sender === 'user' ? 'You' : 'Haven';
+  const timestamp = msg.timestamp.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  return `[${timestamp}] ${sender}:\n${msg.content}\n`;
+}).join('\n')}
+
+${'='.repeat(60)}
+End of Chat Export
+`;
+
+    // Create JSON format for programmatic access
+    const jsonContent = JSON.stringify({
+      sessionInfo: sessionInfo ? {
+        id: sessionInfo.id,
+        session_number: sessionInfo.session_number,
+        created_at: sessionInfo.created_at,
+        message_count: sessionInfo.message_count
+      } : null,
+      exportDate: new Date().toISOString(),
+      messages: messages.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender,
+        timestamp: msg.timestamp.toISOString()
+      }))
+    }, null, 2);
+
+    // Create and download text file
+    const textBlob = new Blob([textContent], { type: 'text/plain' });
+    const textUrl = URL.createObjectURL(textBlob);
+    const textLink = document.createElement('a');
+    textLink.href = textUrl;
+    textLink.download = `haven-chat-${sessionInfo ? `session-${sessionInfo.session_number}` : 'current'}-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(textLink);
+    textLink.click();
+    document.body.removeChild(textLink);
+    URL.revokeObjectURL(textUrl);
+
+    // Also download JSON file
+    const jsonBlob = new Blob([jsonContent], { type: 'application/json' });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    const jsonLink = document.createElement('a');
+    jsonLink.href = jsonUrl;
+    jsonLink.download = `haven-chat-${sessionInfo ? `session-${sessionInfo.session_number}` : 'current'}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(jsonLink);
+    jsonLink.click();
+    document.body.removeChild(jsonLink);
+    URL.revokeObjectURL(jsonUrl);
+
+    // Show success message
+    alert('Chat exported successfully! Two files have been downloaded:\n- Text file (.txt) for easy reading\n- JSON file (.json) for data access');
+    } catch (error) {
+      console.error('Error exporting chat:', error);
+      alert('Failed to export chat. Please try again.');
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return;
@@ -78,6 +233,16 @@ export const PersonalCare: React.FC = () => {
       };
 
       setMessages(prev => [...prev, havenMessage]);
+
+      // Refresh sessions list after sending message
+      if (studentId) {
+        try {
+          const sessionsData = await getSessions(studentId);
+          setSessions(sessionsData);
+        } catch (error) {
+          console.error('Error refreshing sessions:', error);
+        }
+      }
 
       // Handle crisis protocol - discreetly logged, no popup for students
       if (response.crisis_protocol_triggered) {
@@ -223,17 +388,125 @@ export const PersonalCare: React.FC = () => {
 
   return (
     <DashboardLayout userType="student" onCommunityToggle={() => setIsCommunityMode(true)}>
-      <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
         {/* Header - Removed for dark theme */}
 
-        {/* Chat Interface */}
-        <Card className="bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-2xl h-[600px] flex flex-col shadow-2xl">
-          <CardHeader className="pb-4 border-b border-gray-700/50">
-            <CardTitle className="flex items-center gap-2 text-lg text-white">
-              <Bot className="w-5 h-5 text-cyan-400" />
-              Personal Care Session
-            </CardTitle>
-          </CardHeader>
+        <div className="flex gap-6">
+          {/* Previous Chats Sidebar */}
+          <div className={`w-80 flex-shrink-0 transition-all duration-300 ${showPreviousChats ? 'block' : 'hidden lg:block'}`}>
+            <Card className="bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-2xl h-[600px] flex flex-col shadow-2xl">
+              <CardHeader className="pb-4 border-b border-gray-700/50">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg text-white">
+                    <MessageSquare className="w-5 h-5 text-cyan-400" />
+                    Previous Chats
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowPreviousChats(false)}
+                    className="lg:hidden text-gray-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col p-0 bg-gray-800/80">
+                <div className="p-4 border-b border-gray-700/50">
+                  <Button
+                    onClick={handleNewChat}
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-gray-900"
+                    size="sm"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    New Chat
+                  </Button>
+                </div>
+                <ScrollArea className="flex-1">
+                  <div className="p-4 space-y-2">
+                    {isLoadingSessions ? (
+                      <div className="text-center text-gray-400 py-8">Loading chats...</div>
+                    ) : sessions.length === 0 ? (
+                      <div className="text-center text-gray-400 py-8">
+                        <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No previous chats</p>
+                      </div>
+                    ) : (
+                      sessions.map((session) => (
+                        <button
+                          key={session.id}
+                          onClick={() => handleSelectSession(session.id)}
+                          className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                            selectedSessionId === session.id
+                              ? 'bg-cyan-500/20 border border-cyan-500/50'
+                              : 'bg-gray-700/30 border border-gray-700/50 hover:bg-gray-700/50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-400">
+                                {new Date(session.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {session.message_count} msgs
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-300 mt-1">
+                            {new Date(session.created_at).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Chat Interface */}
+          <div className="flex-1">
+            <Card className="bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-2xl h-[600px] flex flex-col shadow-2xl">
+              <CardHeader className="pb-4 border-b border-gray-700/50">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg text-white">
+                    <Bot className="w-5 h-5 text-cyan-400" />
+                    Personal Care Session
+                    {selectedSessionId && (
+                      <span className="text-sm text-gray-400 font-normal">
+                        (Session #{sessions.find(s => s.id === selectedSessionId)?.session_number})
+                      </span>
+                    )}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleExportChat}
+                      className="text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10"
+                      title="Export chat"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowPreviousChats(!showPreviousChats)}
+                      className="lg:hidden text-gray-400 hover:text-white"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
           
           <CardContent className="flex-1 flex flex-col p-0 bg-gray-800/80">
             {/* Messages Area */}
@@ -338,6 +611,8 @@ export const PersonalCare: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

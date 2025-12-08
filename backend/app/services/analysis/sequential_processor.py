@@ -118,6 +118,9 @@ class SequentialProcessor:
             crisis_protocol_triggered=checkpoint5_result["result"].get("crisis_triggered", False)
         )
         
+        # Save messages to session
+        self._save_to_session(message, analysis)
+        
         # Log for auditing
         self._log_processing(message, analysis, total_time)
         
@@ -675,6 +678,80 @@ I'm here to support you, and professional help is available right now."""
         )
         
         self.db.add(db_analysis)
+        self.db.commit()
+    
+    def _get_or_create_session(self, student_id: str, session_id: Optional[int] = None):
+        """Get existing session or create a new one."""
+        from app.models.student import Student, Session
+        
+        student = self.db.query(Student).filter(Student.student_id == student_id).first()
+        if not student:
+            self._ensure_student_exists(student_id)
+            student = self.db.query(Student).filter(Student.student_id == student_id).first()
+        
+        # If session_id provided, try to get that session
+        if session_id:
+            session = self.db.query(Session).filter(
+                Session.id == session_id,
+                Session.student_id == student_id
+            ).first()
+            if session:
+                return session
+        
+        # Get the most recent session (if it's from today, reuse it)
+        from datetime import date
+        today = date.today()
+        recent_session = self.db.query(Session).filter(
+            Session.student_id == student_id
+        ).order_by(Session.created_at.desc()).first()
+        
+        # If recent session exists and is from today, reuse it
+        if recent_session and recent_session.created_at.date() == today:
+            return recent_session
+        
+        # Create new session
+        student.session_count = (student.session_count or 0) + 1
+        new_session = Session(
+            student_id=student_id,
+            session_number=student.session_count,
+            messages=[],
+            session_metadata={}
+        )
+        self.db.add(new_session)
+        self.db.commit()
+        self.db.refresh(new_session)
+        return new_session
+    
+    def _save_to_session(self, message: Message, analysis: MessageAnalysis):
+        """Save user message and AI response to session."""
+        from app.models.student import Session
+        
+        session = self._get_or_create_session(message.student_id, message.session_id)
+        
+        # Get current messages list
+        messages = session.messages if session.messages else []
+        
+        # Add user message
+        user_msg = {
+            "id": f"user_{int(time.time())}",
+            "content": message.message_text,
+            "sender": "user",
+            "timestamp": message.timestamp.isoformat() if hasattr(message.timestamp, 'isoformat') else datetime.utcnow().isoformat()
+        }
+        messages.append(user_msg)
+        
+        # Add AI response if available
+        if analysis.response_text:
+            ai_msg = {
+                "id": f"haven_{int(time.time())}",
+                "content": analysis.response_text,
+                "sender": "haven",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            messages.append(ai_msg)
+        
+        # Update session
+        session.messages = messages
         self.db.commit()
 
 
