@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed left-0 top-0 h-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-r border-white/20 shadow-2xl z-50 transition-all duration-300 ease-in-out",
+        "fixed left-0 top-0 h-full bg-gray-800/90 backdrop-blur-xl border-r border-gray-700/50 shadow-2xl z-50 transition-all duration-300 ease-in-out",
         isOpen ? "w-64" : "w-0 lg:w-16",
         "lg:relative lg:translate-x-0",
         !isOpen && "-translate-x-full lg:translate-x-0"
@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             {isOpen && (
-              <h2 className="text-xl font-bold bg-gradient-to-r from-wellness-calm to-wellness-serene bg-clip-text text-transparent">
+              <h2 className="text-xl font-bold text-cyan-400">
                 Haven
               </h2>
             )}
@@ -88,8 +88,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
                 className={({ isActive }) => cn(
                   "flex items-center px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-gradient-primary text-white shadow-lg" 
-                    : "hover:bg-white/20 dark:hover:bg-gray-800/20 text-foreground hover:text-wellness-calm",
+                    ? "bg-cyan-500/20 text-cyan-400 shadow-lg border border-cyan-500/30" 
+                    : "hover:bg-gray-700/30 text-gray-300 hover:text-cyan-400",
                   !isOpen && "lg:justify-center lg:px-2"
                 )}
               >
@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
                     {item.title}
                   </span>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-wellness-calm/20 to-wellness-serene/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
               </NavLink>
             ))}
           </nav>
@@ -110,12 +110,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
           {/* User Info & Logout */}
           <div className="mt-auto space-y-4">
             {isOpen && (
-              <div className="glass-card p-4 text-center animate-fade-in">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full mx-auto mb-2 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
+              <div className="bg-gray-700/30 p-4 text-center animate-fade-in rounded-xl border border-gray-600/30">
+                <div className="w-12 h-12 bg-cyan-500/20 rounded-full mx-auto mb-2 flex items-center justify-center border border-cyan-500/30">
+                  <Users className="w-6 h-6 text-cyan-400" />
                 </div>
-                <p className="font-medium text-sm">{userType === 'student' ? 'Student' : 'Admin'} User</p>
-                <p className="text-xs text-muted-foreground">Welcome back!</p>
+                <p className="font-medium text-sm text-gray-200">{userType === 'student' ? 'Student' : 'Admin'} User</p>
+                <p className="text-xs text-gray-400">Welcome back!</p>
               </div>
             )}
             

@@ -92,10 +92,10 @@ export const StudentDashboard: React.FC = () => {
         <div className="space-y-8 animate-fade-in">
         {/* Welcome Header */}
         <div className="glass-card p-8 text-center tilt-card">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-wellness-calm to-wellness-serene bg-clip-text text-transparent mb-4 text-reveal-item">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-4 text-reveal-item">
             Welcome Back, Student!
           </h1>
-          <p className="text-xl text-muted-foreground mb-6">
+          <p className="text-xl text-gray-300 mb-6">
             Your mental wellness journey continues here
           </p>
           

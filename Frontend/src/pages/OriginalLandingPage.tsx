@@ -41,7 +41,7 @@ export const OriginalLandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-wellness-calm/5 to-wellness-peaceful/10 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-background)' }}>
       <InteractiveBackground />
       
       {/* Floating Elements */}
@@ -65,13 +65,13 @@ export const OriginalLandingPage: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="text-reveal mb-8">
-            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-wellness-calm via-wellness-serene to-wellness-peaceful bg-clip-text text-transparent mb-6 text-reveal-item">
+            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-6 text-reveal-item">
               Haven
             </h1>
           </div>
           
           <div className="text-reveal mb-8">
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto text-reveal-item typing-effect">
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto text-reveal-item typing-effect">
               Your Journey to Mental Wellness Starts Here
             </p>
           </div>
@@ -79,23 +79,23 @@ export const OriginalLandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
             <Button
               onClick={() => navigate('/student-login')}
-              className="btn-hero group relative overflow-hidden"
+              className="btn-hero group relative overflow-hidden !text-gray-900"
               style={{
                 transform: `perspective(1000px) rotateX(${(mousePosition.y - window.innerHeight / 2) * 0.01}deg) rotateY(${(mousePosition.x - window.innerWidth / 2) * 0.01}deg)`,
               }}
             >
-              <span className="relative z-10">Student Portal</span>
+              <span className="relative z-10 text-gray-900">Student Portal</span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>
 
             <Button
               onClick={() => navigate('/admin-login')}
-              className="btn-secondary group relative overflow-hidden"
+              className="btn-secondary group relative overflow-hidden !text-gray-900"
               style={{
                 transform: `perspective(1000px) rotateX(${(mousePosition.y - window.innerHeight / 2) * -0.01}deg) rotateY(${(mousePosition.x - window.innerWidth / 2) * -0.01}deg)`,
               }}
             >
-              <span className="relative z-10">Counselor / Admin</span>
+              <span className="relative z-10 text-gray-900">Counselor / Admin</span>
               <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>
           </div>
@@ -111,35 +111,35 @@ export const OriginalLandingPage: React.FC = () => {
                 animationDelay: `${index * 0.2}s`,
               }}
             >
-              <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary">
-                <feature.icon className="w-8 h-8 text-white animate-bounce-gentle" />
+              <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-500/30">
+                <feature.icon className="w-8 h-8 text-cyan-400 animate-bounce-gentle" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-foreground">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
+              <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
+              <p className="text-white">{feature.description}</p>
             </div>
           ))}
         </div>
 
         {/* Stats Section */}
-        <div className="glass-card p-12 text-center gradient-animated bg-gradient-to-r from-wellness-calm/10 to-wellness-peaceful/10">
+        <div className="glass-card p-12 text-center gradient-animated">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="tilt-card">
-              <div className="text-4xl font-bold text-wellness-calm mb-2">1000+</div>
-              <div className="text-muted-foreground">Students Helped</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">1000+</div>
+              <div className="text-gray-300">Students Helped</div>
             </div>
             <div className="tilt-card">
-              <div className="text-4xl font-bold text-wellness-serene mb-2">50+</div>
-              <div className="text-muted-foreground">Expert Counselors</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">50+</div>
+              <div className="text-gray-300">Expert Counselors</div>
             </div>
             <div className="tilt-card">
-              <div className="text-4xl font-bold text-wellness-peaceful mb-2">24/7</div>
-              <div className="text-muted-foreground">Support Available</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">24/7</div>
+              <div className="text-gray-300">Support Available</div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-muted-foreground">
+        <footer className="mt-16 text-center text-gray-400">
           <p>&copy; 2024 Haven. Your mental health matters.</p>
         </footer>
       </div>

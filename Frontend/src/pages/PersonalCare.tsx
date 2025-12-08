@@ -124,38 +124,20 @@ export const PersonalCare: React.FC = () => {
   return (
     <DashboardLayout userType="student" onCommunityToggle={() => setIsCommunityMode(true)}>
       <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="glass-card p-6 text-center tilt-card">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-haven flex items-center justify-center">
-              <Heart 
-                className="w-6 h-6 text-haven-deepAqua" 
-                style={{ 
-                  filter: 'drop-shadow(0 0 4px rgba(102, 252, 241, 0.3))' 
-                }}
-              />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-haven-softGlowAqua to-haven-mutedGrayAqua bg-clip-text text-transparent">
-              Chat with Haven
-            </h1>
-          </div>
-          <p className="text-lg text-muted-foreground">
-            Your personal AI companion for mental health support and guidance
-          </p>
-        </div>
+        {/* Header - Removed for dark theme */}
 
         {/* Chat Interface */}
-        <Card className="glass-card border-0 h-[600px] flex flex-col">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Bot className="w-5 h-5 text-haven-softGlowAqua" />
+        <Card className="bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-2xl h-[600px] flex flex-col shadow-2xl">
+          <CardHeader className="pb-4 border-b border-gray-700/50">
+            <CardTitle className="flex items-center gap-2 text-lg text-white">
+              <Bot className="w-5 h-5 text-cyan-400" />
               Personal Care Session
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="flex-1 flex flex-col p-0">
+          <CardContent className="flex-1 flex flex-col p-0 bg-gray-800/80">
             {/* Messages Area */}
-            <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
+            <ScrollArea className="flex-1 px-6 bg-transparent" ref={scrollAreaRef}>
               <div className="space-y-4 pb-4">
                 {messages.map((message) => (
                   <div
@@ -166,7 +148,7 @@ export const PersonalCare: React.FC = () => {
                   >
                     {message.sender === 'haven' && (
                       <Avatar className="w-8 h-8 mt-1">
-                        <AvatarFallback className="bg-gradient-haven text-haven-deepAqua text-sm font-semibold">
+                        <AvatarFallback className="bg-cyan-500 text-gray-900 text-sm font-semibold">
                           H
                         </AvatarFallback>
                       </Avatar>
@@ -175,12 +157,12 @@ export const PersonalCare: React.FC = () => {
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         message.sender === 'user'
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-haven-mutedTeal/20 text-foreground border border-haven-softGlowAqua/20'
+                          ? 'bg-blue-600 text-white ml-auto'
+                          : 'bg-gray-700/90 text-white'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-2">
+                      <p className="text-sm leading-relaxed text-white">{message.content}</p>
+                      <p className="text-xs text-gray-400 mt-2">
                         {message.timestamp.toLocaleTimeString([], { 
                           hour: '2-digit', 
                           minute: '2-digit' 
@@ -190,7 +172,7 @@ export const PersonalCare: React.FC = () => {
 
                     {message.sender === 'user' && (
                       <Avatar className="w-8 h-8 mt-1">
-                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        <AvatarFallback className="bg-blue-600 text-white text-sm">
                           <User className="w-4 h-4" />
                         </AvatarFallback>
                       </Avatar>
@@ -201,15 +183,15 @@ export const PersonalCare: React.FC = () => {
                 {isTyping && (
                   <div className="flex gap-3">
                     <Avatar className="w-8 h-8 mt-1">
-                      <AvatarFallback className="bg-gradient-haven text-haven-deepAqua text-sm font-semibold">
+                      <AvatarFallback className="bg-cyan-500 text-gray-900 text-sm font-semibold">
                         H
                       </AvatarFallback>
                     </Avatar>
-                    <div className="bg-haven-mutedTeal/20 text-foreground border border-haven-softGlowAqua/20 rounded-2xl px-4 py-3">
+                    <div className="bg-gray-700/90 text-white rounded-2xl px-4 py-3">
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-haven-softGlowAqua rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-haven-softGlowAqua rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-haven-softGlowAqua rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -218,28 +200,25 @@ export const PersonalCare: React.FC = () => {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t border-border/50 p-4">
+            <div className="border-t border-gray-700/50 p-4">
               <div className="flex gap-3">
                 <Input
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Share your thoughts with Haven..."
-                  className="flex-1 bg-white/50 dark:bg-gray-800/50 border-haven-softGlowAqua/30 focus:border-haven-softGlowAqua focus:ring-haven-softGlowAqua/20"
+                  className="flex-1 bg-gray-700/50 border border-gray-600 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20"
                   disabled={isTyping}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isTyping}
-                  className="bg-gradient-haven text-haven-deepAqua hover:scale-105 transition-transform duration-300"
-                  style={{
-                    boxShadow: '0 0 10px 2px rgba(102, 252, 241, 0.2)'
-                  }}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-gray-900 rounded-full w-10 h-10 p-0 hover:scale-105 transition-transform duration-300"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
+              <p className="text-xs text-gray-400 mt-2 text-center">
                 Haven is an AI companion designed to provide support and guidance. For emergency situations, please contact a crisis helpline.
               </p>
             </div>

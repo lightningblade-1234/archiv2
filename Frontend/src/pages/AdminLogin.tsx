@@ -63,7 +63,7 @@ export const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-wellness-serene/5 to-wellness-peaceful/10 relative">
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-background)' }}>
       <InteractiveBackground />
       
       <div className="relative z-10 container mx-auto px-6 py-12 flex items-center justify-center min-h-screen">
@@ -72,22 +72,22 @@ export const AdminLogin: React.FC = () => {
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="mb-8 btn-glass group"
+            className="mb-8 hover:bg-white/10"
           >
-            <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
 
           {/* Admin Login Card */}
-          <Card className="glass-card border-0 shadow-glass animate-scale-in">
+          <Card className="bg-gray-800/90 backdrop-blur-md border border-gray-700/50 shadow-xl">
             <CardHeader className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-secondary flex items-center justify-center">
-                <Shield className="w-8 h-8 text-wellness-peaceful animate-pulse-gentle" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                <Shield className="w-8 h-8 text-cyan-400" />
               </div>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-wellness-serene to-wellness-peaceful bg-clip-text text-transparent">
+              <CardTitle className="text-3xl font-bold text-cyan-400">
                 Admin Portal
               </CardTitle>
-              <CardDescription className="text-muted-foreground">
+              <CardDescription className="text-gray-300 mt-2">
                 Secure access for counselors and administrators
               </CardDescription>
             </CardHeader>
@@ -95,9 +95,9 @@ export const AdminLogin: React.FC = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-white">Email Address</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="email"
                       name="email"
@@ -105,16 +105,16 @@ export const AdminLogin: React.FC = () => {
                       placeholder="Enter your admin email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="pl-10 glass-card border-0 focus:ring-2 focus:ring-wellness-serene transition-all duration-300"
+                      className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-400"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium text-white">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="password"
                       name="password"
@@ -122,14 +122,14 @@ export const AdminLogin: React.FC = () => {
                       placeholder="Enter your secure password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="pl-10 glass-card border-0 focus:ring-2 focus:ring-wellness-serene transition-all duration-300"
+                      className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-400"
                       required
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md border border-red-200 dark:border-red-800">
+                  <div className="p-3 text-sm text-red-200 bg-red-900/50 rounded-md border border-red-600">
                     {error}
                   </div>
                 )}
@@ -137,20 +137,21 @@ export const AdminLogin: React.FC = () => {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full btn-secondary group relative overflow-hidden"
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-gray-900"
                 >
                   {isLoading ? (
-                    <LoadingSpinner size="sm" className="mr-2" />
-                  ) : null}
-                  <span className="relative z-10">
-                    {isLoading ? 'Authenticating...' : 'Access Dashboard'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-wellness-peaceful to-wellness-gentle opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <>
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    'Access Dashboard'
+                  )}
                 </Button>
               </form>
 
-              <div className="mt-6 p-4 glass-card">
-                <p className="text-xs text-muted-foreground text-center">
+              <div className="mt-6 p-4 bg-gray-700/30 rounded-lg">
+                <p className="text-xs text-gray-400 text-center">
                   This portal is restricted to authorized personnel only. 
                   All activities are monitored and logged for security purposes.
                 </p>

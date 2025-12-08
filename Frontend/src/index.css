@@ -6,51 +6,51 @@
 
 @layer base {
   :root {
-    /* Calming Mental Health Color Palette */
-    --background: 240 20% 98%;
-    --foreground: 215 25% 25%;
+    /* Deep Blues and Purples - Tranquil Background */
+    --background: 240 35% 12%;
+    --foreground: 210 20% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 25%;
+    --card: 240 30% 15%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 25%;
+    --popover: 240 30% 15%;
+    --popover-foreground: 210 20% 95%;
 
-    /* Calming Blue Primary */
-    --primary: 210 100% 65%;
-    --primary-foreground: 0 0% 100%;
+    /* Soft Cyan/Teal Primary - Accent Color */
+    --primary: 180 60% 55%;
+    --primary-foreground: 240 35% 12%;
 
-    /* Soft Teal Secondary */
-    --secondary: 180 25% 90%;
-    --secondary-foreground: 180 50% 25%;
+    /* Deep Muted Blue-Gray Secondary */
+    --secondary: 220 25% 25%;
+    --secondary-foreground: 210 20% 95%;
 
-    /* Gentle Green Accent */
-    --accent: 150 40% 85%;
-    --accent-foreground: 150 60% 25%;
+    /* Soft Cyan Accent */
+    --accent: 180 55% 60%;
+    --accent-foreground: 240 35% 12%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 240 25% 20%;
+    --muted-foreground: 210 15% 75%;
 
     --destructive: 350 75% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
-    --ring: 210 100% 65%;
+    --border: 240 25% 25%;
+    --input: 240 25% 20%;
+    --ring: 180 60% 55%;
 
     --radius: 1rem;
 
-    /* Wellness Color Palette */
-    --wellness-calm: 210 100% 70%;
-    --wellness-serene: 180 60% 65%;
-    --wellness-peaceful: 150 50% 70%;
-    --wellness-gentle: 120 40% 75%;
-    --wellness-warm: 45 85% 75%;
+    /* Tranquil Color Palette - Deep Blues and Purples */
+    --wellness-calm: 240 40% 45%;
+    --wellness-serene: 260 35% 50%;
+    --wellness-peaceful: 250 30% 40%;
+    --wellness-gentle: 240 25% 35%;
+    --wellness-warm: 270 30% 45%;
 
-    /* Glass Effects */
-    --glass-bg: 0 0% 100% / 0.1;
-    --glass-border: 0 0% 100% / 0.2;
-    --glass-shadow: 0 0% 0% / 0.1;
+    /* Glass Effects - Dark Theme */
+    --glass-bg: 240 30% 15% / 0.8;
+    --glass-border: 240 25% 30% / 0.5;
+    --glass-shadow: 0 0% 0% / 0.3;
 
     /* Animations */
     --animation-duration: 0.3s;
@@ -58,62 +58,56 @@
     --hover-lift: translateY(-4px);
     --hover-scale: scale(1.02);
 
-    /* Haven Color Palette */
-    --haven-dark-emerald: 169 100% 12%;
-    --haven-deep-aqua: 165 40% 10%;
-    --haven-muted-teal: 167 33% 21%;
-    --haven-soft-glow-aqua: 174 96% 68%;
-    --haven-off-white: 0 0% 96%;
-    --haven-muted-gray-aqua: 171 36% 67%;
-    --haven-subtle-gray: 220 9% 46%;
+    /* Soft Cyan/Teal Accent Colors */
+    --accent-cyan: 180 60% 55%;
+    --accent-teal: 175 55% 50%;
+    --accent-light-cyan: 180 70% 65%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--wellness-calm)), hsl(var(--wellness-serene)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--wellness-peaceful)), hsl(var(--wellness-gentle)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--wellness-warm)), hsl(var(--wellness-peaceful)));
-    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    --gradient-haven: linear-gradient(135deg, hsl(var(--haven-soft-glow-aqua)), hsl(174 85% 60%));
+    /* Deep Muted Blue-Gray for Text Bubbles */
+    --bubble-bg: 220 25% 25%;
+    --bubble-text: 210 20% 95%;
+
+    /* Gradients - Deep Blues and Purples */
+    --gradient-primary: linear-gradient(135deg, hsl(240, 40%, 45%), hsl(260, 35%, 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(250, 30%, 40%), hsl(270, 30%, 45%));
+    --gradient-warm: linear-gradient(135deg, hsl(240, 35%, 35%), hsl(250, 30%, 40%));
+    --gradient-glass: linear-gradient(135deg, rgba(30, 40, 60, 0.8), rgba(40, 50, 70, 0.6));
+    --gradient-shimmer: linear-gradient(90deg, transparent, rgba(100, 200, 220, 0.2), transparent);
+    --gradient-haven: linear-gradient(135deg, hsl(180, 60%, 55%), hsl(175, 55%, 50%));
+    --gradient-background: linear-gradient(135deg, hsl(240, 35%, 12%), hsl(260, 30%, 15%), hsl(250, 25%, 18%));
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 15% 85%;
+    --background: 215 25% 10%;
+    --foreground: 240 20% 98%;
 
-    --card: 215 25% 12%;
-    --card-foreground: 210 15% 85%;
+    --card: 215 25% 15%;
+    --card-foreground: 240 20% 98%;
 
-    --popover: 215 25% 12%;
-    --popover-foreground: 210 15% 85%;
+    --popover: 215 25% 15%;
+    --popover-foreground: 240 20% 98%;
 
-    --primary: 210 100% 70%;
-    --primary-foreground: 215 30% 8%;
+    --primary: 210 100% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 15% 20%;
-    --secondary-foreground: 180 30% 80%;
+    --secondary: 180 25% 20%;
+    --secondary-foreground: 180 50% 85%;
 
-    --accent: 150 20% 25%;
-    --accent-foreground: 150 40% 80%;
+    --accent: 150 40% 25%;
+    --accent-foreground: 150 60% 85%;
 
-    --muted: 215 20% 15%;
-    --muted-foreground: 215 10% 60%;
+    --muted: 210 20% 25%;
+    --muted-foreground: 215 15% 75%;
 
-    --destructive: 350 75% 65%;
-    --destructive-foreground: 215 30% 8%;
+    --destructive: 350 75% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 215 20% 18%;
-    --input: 215 20% 18%;
-    --ring: 210 100% 70%;
+    --border: 210 15% 30%;
+    --input: 210 15% 30%;
+    --ring: 210 100% 65%;
 
-    /* Dark Mode Wellness Colors */
-    --wellness-calm: 210 80% 60%;
-    --wellness-serene: 180 50% 55%;
-    --wellness-peaceful: 150 40% 60%;
-    --wellness-gentle: 120 35% 65%;
-    --wellness-warm: 45 70% 65%;
-
-    /* Dark Glass Effects */
-    --glass-bg: 0 0% 0% / 0.2;
+    /* Glass Effects - Dark Mode */
+    --glass-bg: 0 0% 100% / 0.05;
     --glass-border: 0 0% 100% / 0.1;
     --glass-shadow: 0 0% 0% / 0.3;
 
@@ -163,20 +157,44 @@
   .btn-hero {
     @apply bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white font-bold 
            px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-110 
-           hover:-translate-y-2 transition-all duration-500 border border-white/30 
-           backdrop-blur-sm relative overflow-hidden;
+           hover:-translate-y-2 transition-all duration-500 border border-white/30 backdrop-blur-lg;
   }
 
-  /* Glass Card Effects */
+  /* Glass Card Effects - Dark Theme */
   .glass-card {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl 
+    @apply bg-gray-800/80 backdrop-blur-md border border-gray-700/50 rounded-2xl 
            shadow-xl hover:shadow-2xl transition-all duration-300 
-           hover:bg-white/15 hover:-translate-y-1;
+           hover:bg-gray-800/90 hover:-translate-y-1;
   }
 
   .glass-nav {
-    @apply bg-white/80 backdrop-blur-xl border-b border-white/20 
+    @apply bg-gray-800/80 backdrop-blur-xl border-b border-gray-700/50 
            shadow-lg transition-all duration-300;
+  }
+
+  /* Haven Color Utilities - Required for PersonalCare component */
+  .bg-gradient-haven {
+    background: var(--gradient-haven);
+  }
+
+  .bg-haven-mutedTeal\/20 {
+    background-color: hsl(var(--haven-muted-teal) / 0.2);
+  }
+
+  .border-haven-softGlowAqua\/20 {
+    border-color: hsl(var(--haven-soft-glow-aqua) / 0.2);
+  }
+
+  .border-haven-softGlowAqua\/30 {
+    border-color: hsl(var(--haven-soft-glow-aqua) / 0.3);
+  }
+
+  .focus\:border-haven-softGlowAqua:focus {
+    border-color: hsl(var(--haven-soft-glow-aqua));
+  }
+
+  .focus\:ring-haven-softGlowAqua\/20:focus {
+    --tw-ring-color: hsl(var(--haven-soft-glow-aqua) / 0.2);
   }
 
   /* Animated Borders */
@@ -239,14 +257,34 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: -1;
+    z-index: 0;
   }
 
-  .floating-element {
+  .floating-circle {
     position: absolute;
     border-radius: 50%;
     background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent);
     animation: float 6s ease-in-out infinite;
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent;
+  }
+
+  /* Card Hover Effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-105;
+  }
+
+  /* Pulse Animation */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  /* Fade In Animation */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
   }
 
   /* Page Transitions */

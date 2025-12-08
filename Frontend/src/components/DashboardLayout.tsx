@@ -14,7 +14,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, user
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-wellness-calm/5 to-wellness-peaceful/10 dark:from-background dark:via-wellness-calm/10 dark:to-wellness-peaceful/20 relative">
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-background)' }}>
       <InteractiveBackground />
       
       <div className="flex h-screen relative z-10">
@@ -26,7 +26,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, user
         
         <div className="flex-1 flex flex-col min-h-0">
           {/* Top Bar */}
-          <header className="h-16 border-b border-white/10 backdrop-blur-xl bg-white/5 dark:bg-gray-900/5 flex items-center justify-end px-6 gap-3">
+          <header className="h-16 border-b border-gray-700/30 backdrop-blur-xl bg-gray-800/40 flex items-center justify-end px-6 gap-3">
             {userType === 'student' && onCommunityToggle && (
               <Button
                 variant="ghost"

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Offline Whisper STT</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { padding: 10px 16px; font-size: 16px; margin-right: 8px; }
+    #output { margin-top: 16px; width: 100%; min-height: 160px; border: 1px solid #ccc; padding: 12px; white-space: pre-wrap; }
+    #status { margin-top: 8px; color: #666; }
+  </style>
+</head>
+<body>
+  <h2>Offline Whisper — Record & Transcribe</h2>
+
+  <button id="startBtn">🎤 Start Recording</button>
+  <button id="stopBtn" disabled>⏹ Stop Recording</button>
+  <span id="status">Idle</span>
+
+  <h3>Transcription</h3>
+  <div id="output">No transcription yet.</div>
+
+<script>
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const output = document.getElementById('output');
+const status = document.getElementById('status');
+
+let mediaRecorder;
+let audioChunks = [];
+
+startBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstart = () => {
+      status.innerText = "Recording...";
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      output.innerText = "Recording... speak now.";
+    };
+
+    mediaRecorder.onstop = async () => {
+      status.innerText = "Processing audio...";
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+
+      // Create blob (let browser choose format; whisper backend handles it)
+      const blob = new Blob(audioChunks, { type: audioChunks[0]?.type || "audio/webm" });
+
+      const fd = new FormData();
+      // name the file .webm if original type unknown so ffmpeg/whisper can detect it
+      fd.append("audio", blob, "audio.webm");
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/stt", {
+          method: "POST",
+          body: fd
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(()=>({error: "server error"}));
+          output.innerText = "Error: " + (err.error || "Server returned " + res.status);
+          status.innerText = "Idle";
+          return;
+        }
+        const data = await res.json();
+        output.innerText = data.text || "[no speech detected]";
+        status.innerText = "Idle";
+      } catch (e) {
+        output.innerText = "Network error: " + e;
+        status.innerText = "Idle";
+      }
+    };
+
+    mediaRecorder.start();
+  } catch (e) {
+    alert("Microphone access denied or not available: " + e.message);
+  }
+};
+
+stopBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+  }
+};
+</script>
+</body>
+</html>

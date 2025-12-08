@@ -50,13 +50,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Wellness Color Palette
+        // Wellness Color Palette - Mapped to Cyan/Teal Accents
         wellness: {
-          calm: "hsl(var(--wellness-calm))",
-          serene: "hsl(var(--wellness-serene))",
-          peaceful: "hsl(var(--wellness-peaceful))",
-          gentle: "hsl(var(--wellness-gentle))",
-          warm: "hsl(var(--wellness-warm))",
+          calm: "hsl(180, 60%, 55%)",      // Soft Cyan
+          serene: "hsl(175, 55%, 50%)",     // Teal
+          peaceful: "hsl(180, 55%, 60%)",   // Light Cyan
+          gentle: "hsl(175, 60%, 55%)",     // Soft Teal
+          warm: "hsl(180, 65%, 60%)",       // Bright Cyan
         },
         // Haven Color Palette
         haven: {
