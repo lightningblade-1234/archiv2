@@ -335,3 +335,4 @@ export const BreathingExercise: React.FC<BreathingExerciseProps> = ({ isOpen, on
   );
 };
 
+

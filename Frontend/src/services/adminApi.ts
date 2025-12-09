@@ -58,3 +58,4 @@ export function getDailyWellness(days: number = 7): Promise<DailyWellnessData[]>
     });
 }
 
+

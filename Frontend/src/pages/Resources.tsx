@@ -18,21 +18,29 @@ import {
   Heart,
   Brain,
   Shield,
-  Sparkles
+  Sparkles,
+  Wind,
+  Activity,
+  Zap
 } from 'lucide-react';
 import { ShimmerCard } from '@/components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
+import { MeditationHub } from '@/components/MeditationHub';
+import { BreathingExercise } from '@/components/BreathingExercise';
+import { MindfulnessActivity } from '@/components/MindfulnessActivity';
+import { MovementExercises } from '@/components/MovementExercises';
 
 interface Resource {
   id: string;
   title: string;
   description: string;
-  type: 'article' | 'video' | 'audio' | 'pdf';
-  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general' | 'meditation' | 'yoga';
+  type: 'article' | 'video' | 'audio' | 'pdf' | 'app';
+  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general' | 'meditation' | 'yoga' | 'breathing' | 'movement' | 'mindfulness';
   duration?: string;
   rating: number;
   featured: boolean;
   url?: string;
+  appType?: 'meditation' | 'breathing' | 'mindfulness' | 'movement';
 }
 
 export const Resources: React.FC = () => {
@@ -42,6 +50,7 @@ export const Resources: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResourceCategory, setSelectedResourceCategory] = useState('all');
   const [resources, setResources] = useState<Resource[]>([]);
+  const [activeApp, setActiveApp] = useState<'meditation' | 'breathing' | 'mindfulness' | 'movement' | null>(null);
 
   // Load resources - using mock data
   useEffect(() => {
@@ -108,6 +117,50 @@ export const Resources: React.FC = () => {
             duration: '10 min read',
             rating: 4.7,
             featured: false,
+          },
+          {
+            id: 'app-meditation',
+            title: 'MindCare Clinical Hub',
+            description: 'Clinical triage system with neuro-feedback protocols for anxiety, brain fog, insomnia, panic, and stress.',
+            type: 'app',
+            category: 'meditation',
+            duration: '5-20 min',
+            rating: 4.9,
+            featured: true,
+            appType: 'meditation',
+          },
+          {
+            id: 'app-breathing',
+            title: 'Deep Breathing Exercise',
+            description: 'Interactive 4-7-8 breathing exercise with visual guidance to reduce anxiety and promote relaxation.',
+            type: 'app',
+            category: 'breathing',
+            duration: '1-5 min',
+            rating: 4.8,
+            featured: true,
+            appType: 'breathing',
+          },
+          {
+            id: 'app-mindfulness',
+            title: 'Walking Meditation',
+            description: 'Guided walking meditation with timer, ambient sounds, and progress tracking.',
+            type: 'app',
+            category: 'mindfulness',
+            duration: '20 min',
+            rating: 4.7,
+            featured: false,
+            appType: 'mindfulness',
+          },
+          {
+            id: 'app-movement',
+            title: 'Movement & Wellness Exercises',
+            description: 'Step-by-step movement exercises including neck stretches, shoulder rolls, and gentle movements.',
+            type: 'app',
+            category: 'movement',
+            duration: '30 sec - 1 min',
+            rating: 4.8,
+            featured: false,
+            appType: 'movement',
           }
         ];
         setResources(mockResources);
@@ -126,6 +179,9 @@ export const Resources: React.FC = () => {
     { id: 'anxiety', label: 'Anxiety', icon: Brain },
     { id: 'depression', label: 'Depression', icon: Heart },
     { id: 'meditation', label: 'Meditation', icon: Sparkles },
+    { id: 'breathing', label: 'Breathing', icon: Wind },
+    { id: 'mindfulness', label: 'Mindfulness', icon: Activity },
+    { id: 'movement', label: 'Movement', icon: Zap },
     { id: 'yoga', label: 'Yoga', icon: Heart },
     { id: 'stress', label: 'Stress', icon: Shield },
     { id: 'wellness', label: 'Wellness', icon: Star },
@@ -137,6 +193,7 @@ export const Resources: React.FC = () => {
       case 'video': return Video;
       case 'audio': return Headphones;
       case 'pdf': return Download;
+      case 'app': return Sparkles;
       default: return FileText;
     }
   };
@@ -146,6 +203,7 @@ export const Resources: React.FC = () => {
       case 'video': return 'from-red-500 to-pink-500';
       case 'audio': return 'from-purple-500 to-indigo-500';
       case 'pdf': return 'from-green-500 to-teal-500';
+      case 'app': return 'from-cyan-500 to-teal-500';
       default: return 'from-blue-500 to-cyan-500';
     }
   };
@@ -158,17 +216,31 @@ export const Resources: React.FC = () => {
     // Hide individual videos from the main list, keep only the collection container
     const isHiddenVideo = resource.type === 'video' && resource.title !== 'Mindfulness Meditation for Beginners';
 
+    // Always show apps
+    if (resource.type === 'app') {
+      return matchesSearch && matchesCategory;
+    }
+
     return matchesSearch && matchesCategory && !isHiddenVideo;
   });
 
   const featuredResources = resources.filter(resource => resource.featured && (resource.type !== 'video' || resource.title === 'Mindfulness Meditation for Beginners'));
 
   const handleResourceClick = (resource: Resource) => {
-    if (resource.title.includes('Building Resilience') || resource.title.includes('Resilience')) {
+    console.log('🔵 Resource clicked:', resource);
+    if (resource.type === 'app' && resource.appType) {
+      console.log('🚀 Launching app:', resource.appType);
+      setActiveApp(resource.appType);
+    } else if (resource.title.includes('Building Resilience') || resource.title.includes('Resilience')) {
       navigate('/resilience-article');
     } else {
       navigate(`/student-dashboard/resources/${resource.id}`);
     }
+  };
+
+  const handleAppComplete = (activityName: string, durationMinutes: number) => {
+    console.log(`Completed ${activityName} for ${durationMinutes} minutes`);
+    // You can add logging or tracking here
   };
 
   if (isLoading) {
@@ -183,6 +255,65 @@ export const Resources: React.FC = () => {
           </div>
         </div>
       </DashboardLayout>
+    );
+  }
+
+  // Render active app if one is selected
+  if (activeApp === 'meditation') {
+    console.log('🧘 Rendering MeditationHub');
+    return (
+      <MeditationHub 
+        onBack={() => {
+          console.log('🔙 Back from MeditationHub');
+          setActiveApp(null);
+        }} 
+        onComplete={handleAppComplete}
+      />
+    );
+  }
+
+  if (activeApp === 'breathing') {
+    console.log('💨 Rendering BreathingExercise');
+    return (
+      <div className="fixed inset-0 z-[9999] bg-background">
+        <BreathingExercise 
+          isOpen={true}
+          onClose={() => {
+            console.log('🔙 Closing BreathingExercise');
+            setActiveApp(null);
+          }}
+          onComplete={(durationMinutes) => {
+            handleAppComplete('Breathing Exercise', durationMinutes);
+            setActiveApp(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (activeApp === 'mindfulness') {
+    console.log('🧘‍♀️ Rendering MindfulnessActivity');
+    return (
+      <MindfulnessActivity 
+        onBack={() => {
+          console.log('🔙 Back from MindfulnessActivity');
+          setActiveApp(null);
+        }} 
+        onComplete={handleAppComplete}
+      />
+    );
+  }
+
+  if (activeApp === 'movement') {
+    console.log('🏃 Rendering MovementExercises');
+    return (
+      <MovementExercises 
+        onBack={() => {
+          console.log('🔙 Back from MovementExercises');
+          setActiveApp(null);
+        }} 
+        onComplete={handleAppComplete}
+      />
     );
   }
 
@@ -210,6 +341,66 @@ export const Resources: React.FC = () => {
           </div>
         </div>
 
+        {/* Interactive Apps Section */}
+        {(() => {
+          const apps = resources.filter(r => r.type === 'app');
+          if (apps.length > 0) {
+            return (
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-cyan-400" />
+                  Interactive Apps
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {apps.map((resource, index) => {
+                    const TypeIcon = getTypeIcon(resource.type);
+                    return (
+                      <Card
+                        key={resource.id}
+                        className="glass-card border-2 border-cyan-500/30 hover:border-cyan-500/60 hover:shadow-2xl transition-all duration-500 cursor-pointer tilt-card group bg-gradient-to-br from-cyan-500/10 to-teal-500/10"
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${getTypeColor(resource.type)} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                              <TypeIcon className="w-6 h-6 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="text-xs bg-cyan-500/20 text-cyan-300 border-cyan-500/30">
+                              App
+                            </Badge>
+                          </div>
+                          <CardTitle className="text-lg">{resource.title}</CardTitle>
+                          <CardDescription>{resource.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              {resource.duration}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm font-medium">{resource.rating}</span>
+                            </div>
+                          </div>
+                          <Button
+                            className="w-full btn-glass group-hover:bg-cyan-500/30 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border-cyan-500/30"
+                            onClick={() => handleResourceClick(resource)}
+                          >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Launch App
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Featured Resources */}
         {featuredResources.length > 0 && (
           <div>
@@ -218,7 +409,7 @@ export const Resources: React.FC = () => {
               Featured Resources
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {featuredResources.map((resource, index) => {
+              {featuredResources.filter(r => r.type !== 'app').map((resource, index) => {
                 const TypeIcon = getTypeIcon(resource.type);
                 return (
                   <Card
@@ -321,7 +512,14 @@ export const Resources: React.FC = () => {
                           className="w-full btn-glass"
                           onClick={() => handleResourceClick(resource)}
                         >
-                          View
+                          {resource.type === 'app' ? (
+                            <>
+                              <Sparkles className="w-3 h-3 mr-2" />
+                              Launch
+                            </>
+                          ) : (
+                            'View'
+                          )}
                         </Button>
                       </CardContent>
                     </Card>
