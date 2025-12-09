@@ -47,11 +47,40 @@ export const PersonalCare: React.FC = () => {
     }
   }, [messages]);
 
-  // Load sessions on mount
+  // Refs to prevent infinite loops
+  const isLoadingSessionsRef = useRef(false);
+  const loadedStudentIdRef = useRef<string | null>(null);
+
+  // Load sessions on mount - with guards to prevent infinite loops
   useEffect(() => {
+    if (!studentId) {
+      setIsLoadingSessions(false);
+      return;
+    }
+    
+    // Block admin IDs
+    if (studentId.startsWith('admin_')) {
+      console.error('❌ PersonalCare: Admin IDs not allowed');
+      setIsLoadingSessions(false);
+      return;
+    }
+    
+    // Prevent multiple simultaneous loads
+    if (isLoadingSessionsRef.current) {
+      console.log('🔍 Already loading sessions, skipping');
+      return;
+    }
+    
+    // If we already loaded for this studentId, skip
+    if (loadedStudentIdRef.current === studentId) {
+      console.log('🔍 Already loaded sessions for this studentId, skipping');
+      setIsLoadingSessions(false);
+      return;
+    }
+    
     const loadSessions = async () => {
-      if (!studentId) return;
-      
+      isLoadingSessionsRef.current = true;
+      loadedStudentIdRef.current = studentId;
       setIsLoadingSessions(true);
       try {
         const sessionsData = await getSessions(studentId);
@@ -59,6 +88,7 @@ export const PersonalCare: React.FC = () => {
       } catch (error) {
         console.error('Error loading sessions:', error);
       } finally {
+        isLoadingSessionsRef.current = false;
         setIsLoadingSessions(false);
       }
     };
