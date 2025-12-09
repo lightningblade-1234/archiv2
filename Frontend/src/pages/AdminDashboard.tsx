@@ -47,6 +47,14 @@ import { ShimmerCard } from '@/components/LoadingSpinner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { getPendingAlerts, getOutcomeSummary } from '@/services/api';
 import { getDashboardStats, getMonthlyWellness, getDailyWellness } from '@/services/adminApi';
+import { 
+  getCrisisAnalytics, 
+  getCrisisAnalyticsDetail,
+  getCrisisReports,
+  getCrisisReportDetail,
+  type CrisisAnalytics as CrisisAnalyticsType,
+  type CrisisReport as CrisisReportType
+} from '@/services/api';
 
 // ============================================================================
 // DATA TYPE TEMPLATES - Replace with real API calls
@@ -154,6 +162,16 @@ export const AdminDashboard: React.FC = () => {
   
   // Daily wellness data - TODO: Fetch from API endpoint (e.g., /api/analytics/wellness/daily)
   const [dailyWellnessData, setDailyWellnessData] = useState<DailyWellnessData[]>([]);
+  
+  // Crisis analytics data - Fetched when emergency protocol is triggered
+  const [crisisAnalytics, setCrisisAnalytics] = useState<CrisisAnalyticsType[]>([]);
+  const [selectedAnalytics, setSelectedAnalytics] = useState<CrisisAnalyticsType | null>(null);
+  const [analyticsDetail, setAnalyticsDetail] = useState<any>(null);
+  
+  // Crisis reports (word summaries) - Generated when emergency protocol is triggered
+  const [crisisReports, setCrisisReports] = useState<CrisisReportType[]>([]);
+  const [selectedReport, setSelectedReport] = useState<CrisisReportType | null>(null);
+  const [reportDetail, setReportDetail] = useState<any>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -167,7 +185,7 @@ export const AdminDashboard: React.FC = () => {
         setIsLoading(true);
         
         // Fetch all data in parallel with individual error handling
-        const [alertsResult, statsResult, monthlyResult, dailyResult] = await Promise.allSettled([
+        const [alertsResult, statsResult, monthlyResult, dailyResult, analyticsResult, reportsResult] = await Promise.allSettled([
           getPendingAlerts(10).catch(err => {
             console.error('Error fetching alerts:', err);
             return [];
@@ -182,6 +200,14 @@ export const AdminDashboard: React.FC = () => {
           }),
           getDailyWellness(7).catch(err => {
             console.error('Error fetching daily wellness:', err);
+            return [];
+          }),
+          getCrisisAnalytics().catch(err => {
+            console.error('Error fetching crisis analytics:', err);
+            return [];
+          }),
+          getCrisisReports().catch(err => {
+            console.error('Error fetching crisis reports:', err);
             return [];
           })
         ]);
@@ -240,6 +266,20 @@ export const AdminDashboard: React.FC = () => {
           setDailyWellnessData(dailyResult.value);
         } else {
           setDailyWellnessData([]);
+        }
+
+        // Process crisis analytics
+        if (analyticsResult.status === 'fulfilled') {
+          setCrisisAnalytics(analyticsResult.value);
+        } else {
+          setCrisisAnalytics([]);
+        }
+
+        // Process crisis reports
+        if (reportsResult.status === 'fulfilled') {
+          setCrisisReports(reportsResult.value);
+        } else {
+          setCrisisReports([]);
         }
         
         clearTimeout(timeoutId);
@@ -708,16 +748,129 @@ export const AdminDashboard: React.FC = () => {
           <TabsContent value="analytics" className="space-y-6">
             <Card className="glass-card border-0">
               <CardHeader>
-                <CardTitle>Advanced Analytics</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-cyan-400" />
+                  Crisis Analytics
+                </CardTitle>
                 <CardDescription>
-                  Detailed wellness metrics and predictive insights
+                  Comprehensive user data collected when emergency protocol is triggered
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Advanced analytics coming soon...</p>
-                </div>
+              <CardContent className="space-y-4">
+                {crisisAnalytics.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No crisis analytics data available</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Analytics will appear here when emergency protocol is triggered
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {crisisAnalytics.map((analytics) => (
+                      <div
+                        key={analytics.id}
+                        className="p-4 rounded-lg border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:bg-white/5"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{analytics.student_name || analytics.student_id}</p>
+                              <Badge 
+                                variant={
+                                  analytics.priority === 'CRITICAL' ? 'destructive' :
+                                  analytics.priority === 'HIGH' ? 'default' : 'secondary'
+                                }
+                                className="text-xs"
+                              >
+                                {analytics.priority}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{analytics.student_email}</p>
+                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const detail = await getCrisisAnalyticsDetail(analytics.id);
+                                    setAnalyticsDetail(detail);
+                                    setSelectedAnalytics(analytics);
+                                  } catch (error) {
+                                    console.error('Error loading analytics detail:', error);
+                                  }
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="glass-card border-0 max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Crisis Analytics - {analytics.student_name || analytics.student_id}</DialogTitle>
+                                <DialogDescription>
+                                  Priority: <Badge variant={analytics.priority === 'CRITICAL' ? 'destructive' : 'default'}>{analytics.priority}</Badge>
+                                </DialogDescription>
+                              </DialogHeader>
+                              {analyticsDetail && (
+                                <div className="space-y-6">
+                                  <div>
+                                    <h4 className="font-medium mb-2">Student Profile</h4>
+                                    <div className="text-sm text-muted-foreground space-y-1">
+                                      <p>Name: {analyticsDetail.student_profile?.name || 'N/A'}</p>
+                                      <p>Email: {analyticsDetail.student_profile?.email || 'N/A'}</p>
+                                      <p>Major: {analyticsDetail.student_profile?.major || 'N/A'}</p>
+                                      <p>Total Sessions: {analyticsDetail.student_profile?.session_count || 0}</p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-2">Current Risk Profile</h4>
+                                    <div className="text-sm text-muted-foreground">
+                                      <pre className="bg-black/20 p-3 rounded overflow-auto">
+                                        {JSON.stringify(analyticsDetail.current_risk_profile || {}, null, 2)}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-2">Trigger Information</h4>
+                                    <div className="text-sm text-muted-foreground space-y-1">
+                                      <p><strong>Reason:</strong> {analyticsDetail.trigger_reason}</p>
+                                      <p><strong>Trigger Message:</strong> {analyticsDetail.trigger_message || 'N/A'}</p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-2">Session Summary</h4>
+                                    <div className="text-sm text-muted-foreground">
+                                      <pre className="bg-black/20 p-3 rounded overflow-auto">
+                                        {JSON.stringify(analyticsDetail.session_summary || {}, null, 2)}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <strong>Trigger Reason:</strong> {analytics.trigger_reason}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(analytics.created_at).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -725,16 +878,116 @@ export const AdminDashboard: React.FC = () => {
           <TabsContent value="reports" className="space-y-6">
             <Card className="glass-card border-0">
               <CardHeader>
-                <CardTitle>Generated Reports</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-cyan-400" />
+                  Crisis Reports
+                </CardTitle>
                 <CardDescription>
-                  Export and download wellness reports
+                  Word summaries generated when emergency protocol is triggered
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <ClipboardList className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Report generation coming soon...</p>
-                </div>
+              <CardContent className="space-y-4">
+                {crisisReports.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ClipboardList className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No crisis reports available</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Reports will appear here when emergency protocol is triggered
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {crisisReports.map((report) => (
+                      <div
+                        key={report.id}
+                        className="p-4 rounded-lg border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:bg-white/5"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{report.student_name || report.student_id}</p>
+                              <Badge variant="secondary" className="text-xs">
+                                {report.report_type}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(report.created_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const detail = await getCrisisReportDetail(report.id);
+                                    setReportDetail(detail);
+                                    setSelectedReport(report);
+                                  } catch (error) {
+                                    console.error('Error loading report detail:', error);
+                                  }
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Full Report
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="glass-card border-0 max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Crisis Report - {report.student_name || report.student_id}</DialogTitle>
+                                <DialogDescription>
+                                  Report Type: <Badge variant="secondary">{report.report_type}</Badge>
+                                </DialogDescription>
+                              </DialogHeader>
+                              {reportDetail && (
+                                <div className="space-y-6">
+                                  <div>
+                                    <h4 className="font-medium mb-2">Summary</h4>
+                                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                      {reportDetail.summary}
+                                    </p>
+                                  </div>
+                                  {reportDetail.key_findings && reportDetail.key_findings.length > 0 && (
+                                    <div>
+                                      <h4 className="font-medium mb-2">Key Findings</h4>
+                                      <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                        {reportDetail.key_findings.map((finding: string, index: number) => (
+                                          <li key={index}>{finding}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {reportDetail.recommended_actions && reportDetail.recommended_actions.length > 0 && (
+                                    <div>
+                                      <h4 className="font-medium mb-2">Recommended Actions</h4>
+                                      <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                        {reportDetail.recommended_actions.map((action: string, index: number) => (
+                                          <li key={index}>{action}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {report.summary.substring(0, 200)}...
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

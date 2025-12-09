@@ -660,3 +660,144 @@ export async function getJournalSuggestions(
 
   return await response.json();
 }
+
+// ============ CRISIS ANALYTICS API ============
+
+export interface CrisisAnalytics {
+  id: number;
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  priority: string;
+  trigger_reason: string;
+  trigger_message: string | null;
+  created_at: string;
+  alert_id: number | null;
+}
+
+export interface CrisisAnalyticsDetail {
+  id: number;
+  student_id: string;
+  student_profile: any;
+  recent_messages: any[];
+  message_analyses: any[];
+  risk_profiles: any[];
+  current_risk_profile: any;
+  assessments: any[];
+  temporal_patterns: any[];
+  session_summary: any;
+  behavioral_metadata: any;
+  priority: string;
+  trigger_reason: string;
+  trigger_message: string | null;
+  created_at: string;
+}
+
+export interface CrisisReport {
+  id: number;
+  student_id: string;
+  student_name: string;
+  summary: string;
+  key_findings: string[];
+  recommended_actions: string[];
+  report_type: string;
+  created_at: string;
+  analytics_id: number | null;
+}
+
+export interface CrisisReportDetail {
+  id: number;
+  student_id: string;
+  summary: string;
+  key_findings: string[];
+  recommended_actions: string[];
+  report_type: string;
+  generated_by: string;
+  created_at: string;
+  analytics_id: number | null;
+  alert_id: number | null;
+}
+
+// Get crisis analytics (prioritized list)
+export async function getCrisisAnalytics(
+  priority?: string
+): Promise<CrisisAnalytics[]> {
+  const url = priority 
+    ? `${API_BASE_URL}/analytics/crisis?priority=${priority}`
+    : `${API_BASE_URL}/analytics/crisis`
+  
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to get crisis analytics' }));
+    throw new Error(error.detail || 'Failed to get crisis analytics');
+  }
+
+  return await response.json();
+}
+
+// Get detailed crisis analytics
+export async function getCrisisAnalyticsDetail(
+  analyticsId: number
+): Promise<CrisisAnalyticsDetail> {
+  const response = await fetch(`${API_BASE_URL}/analytics/crisis/${analyticsId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to get analytics detail' }));
+    throw new Error(error.detail || 'Failed to get analytics detail');
+  }
+
+  return await response.json();
+}
+
+// Get crisis reports (word summaries)
+export async function getCrisisReports(
+  reportType?: string
+): Promise<CrisisReport[]> {
+  const url = reportType
+    ? `${API_BASE_URL}/analytics/reports?report_type=${reportType}`
+    : `${API_BASE_URL}/analytics/reports`
+  
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to get crisis reports' }));
+    throw new Error(error.detail || 'Failed to get crisis reports');
+  }
+
+  return await response.json();
+}
+
+// Get detailed crisis report
+export async function getCrisisReportDetail(
+  reportId: number
+): Promise<CrisisReportDetail> {
+  const response = await fetch(`${API_BASE_URL}/analytics/reports/${reportId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to get report detail' }));
+    throw new Error(error.detail || 'Failed to get report detail');
+  }
+
+  return await response.json();
+}

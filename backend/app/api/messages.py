@@ -47,6 +47,7 @@ async def process_message(
         # Create alert if crisis protocol triggered or high risk detected
         if analysis.crisis_protocol_triggered or (analysis.risk_profile and analysis.risk_profile.get("overall_risk") in ["HIGH", "CRISIS"]):
             from app.models.analysis import Alert
+            from app.services.crisis.analytics_collector import CrisisAnalyticsCollector
             
             alert_type = "IMMEDIATE" if analysis.crisis_protocol_triggered else "URGENT"
             alert_message = "Crisis protocol triggered - immediate intervention required" if analysis.crisis_protocol_triggered else f"High risk detected: {analysis.risk_profile.get('overall_risk', 'HIGH')} risk level"
@@ -58,6 +59,7 @@ async def process_message(
                 Alert.routing_status == "PENDING"
             ).first()
             
+            alert = None
             if not existing_alert:
                 alert = Alert(
                     student_id=message.student_id,
@@ -67,10 +69,51 @@ async def process_message(
                 )
                 db.add(alert)
                 db.commit()
+                db.refresh(alert)
                 logger.info("alert_created",
                            student_id=message.student_id,
                            alert_type=alert_type,
-                           crisis_triggered=analysis.crisis_protocol_triggered)
+                           crisis_triggered=analysis.crisis_protocol_triggered,
+                           alert_id=alert.id)
+            
+            # Collect comprehensive analytics and generate report when emergency protocol is triggered
+            if analysis.crisis_protocol_triggered:
+                try:
+                    collector = CrisisAnalyticsCollector(db, llm_client)
+                    
+                    # Determine priority
+                    priority = "CRITICAL" if analysis.crisis_protocol_triggered else "HIGH"
+                    
+                    # Collect and save analytics
+                    analytics = await collector.collect_and_save_analytics(
+                        student_id=message.student_id,
+                        alert_id=alert.id if alert else None,
+                        trigger_reason="Crisis protocol triggered - immediate safety concern detected",
+                        trigger_message=message.message_text[:500],  # Limit message length
+                        current_risk_profile=analysis.risk_profile,
+                        priority=priority
+                    )
+                    
+                    # Generate and save word summary report
+                    report = await collector.generate_and_save_report(
+                        student_id=message.student_id,
+                        analytics_id=analytics.id,
+                        alert_id=alert.id if alert else None,
+                        report_type="CRISIS"
+                    )
+                    
+                    logger.info("crisis_data_collected_and_reported",
+                               student_id=message.student_id,
+                               analytics_id=analytics.id,
+                               report_id=report.id,
+                               alert_id=alert.id if alert else None)
+                    
+                except Exception as e:
+                    # Log error but don't fail the message processing
+                    logger.error("crisis_analytics_collection_failed",
+                               student_id=message.student_id,
+                               error=str(e),
+                               exc_info=True)
         
         # Track in hybrid assessment system
         assessment_service = HybridAssessmentService(db, llm_client)

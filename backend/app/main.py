@@ -9,7 +9,7 @@ from app.core.logging import configure_logging
 from app.db.database import init_db
 from app.api import messages, assessments, alerts, learning, auth, students, temporal, outcomes, admin
 from app.api import community as community_api
-from app.api import journal
+from app.api import journal, analytics
 from app.tasks.outcome_checker import check_symptom_improvement
 
 # Import all models to ensure relationships are properly registered
@@ -90,6 +90,9 @@ app.include_router(temporal.router)
 app.include_router(outcomes.router)
 app.include_router(admin.router)
 app.include_router(journal.router)
+app.include_router(analytics.router)
+app.include_router(analytics.router)
+app.include_router(analytics.router)
 
 
 @app.get("/")
@@ -106,6 +109,12 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
 
 if __name__ == "__main__":

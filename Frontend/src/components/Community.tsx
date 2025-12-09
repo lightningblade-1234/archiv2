@@ -375,42 +375,177 @@ export const Community: React.FC<CommunityProps> = ({ onToggle }) => {
 
   const categories = ['Mental Health', 'Academic', 'Wellness', 'Professional', 'Social', 'Other'];
 
+  // Helper function to get the actual user ID
+  const getActualUserId = (): string | null => {
+    // Try all possible sources in order of preference
+    const studentToken = localStorage.getItem('student_token');
+    const adminToken = localStorage.getItem('admin_token');
+    const storedStudentId = localStorage.getItem('studentId');
+    const adminId = localStorage.getItem('admin_id');
+    const adminCommunityMode = localStorage.getItem('admin_community_mode') === 'true';
+    
+    // Priority 1: Student with student token
+    if (studentToken && storedStudentId && !storedStudentId.startsWith('admin_')) {
+      return storedStudentId;
+    }
+    
+    // Priority 2: Admin in community mode
+    if (adminCommunityMode && adminToken && adminId && !studentToken) {
+      return adminId;
+    }
+    
+    // Priority 3: Admin ID from storedStudentId
+    if (storedStudentId && storedStudentId.startsWith('admin_') && adminToken && adminId && !studentToken) {
+      return adminId;
+    }
+    
+    // Priority 4: Context studentId (if not admin)
+    if (studentId && !studentId.startsWith('admin_')) {
+      return studentId;
+    }
+    
+    // Priority 5: Any storedStudentId (fallback)
+    if (storedStudentId) {
+      return storedStudentId;
+    }
+    
+    // Priority 6: Admin ID (last resort)
+    if (adminId && adminToken) {
+      return adminId;
+    }
+    
+    return null;
+  };
+
   // Functions
   const createPost = async () => {
-    if (!studentId || !newPostTitle.trim() || !newPostContent.trim() || !selectedCommunity) {
-      toast.error('Please fill all fields and select a community');
+    // Get actual user ID
+    const actualStudentId = getActualUserId();
+    
+    // Trim all inputs
+    const trimmedTitle = newPostTitle?.trim() || '';
+    const trimmedContent = newPostContent?.trim() || '';
+    const trimmedCommunity = selectedCommunity?.trim() || '';
+    
+    // Debug logging
+    console.log('🔍 createPost validation:', {
+      actualStudentId,
+      trimmedTitle,
+      trimmedTitleLength: trimmedTitle.length,
+      trimmedContent,
+      trimmedContentLength: trimmedContent.length,
+      trimmedCommunity,
+      selectedCommunity,
+      joinedCommunitiesCount: joinedCommunities.length,
+      studentId,
+      localStorage: {
+        studentId: localStorage.getItem('studentId'),
+        studentToken: !!localStorage.getItem('student_token'),
+        adminId: localStorage.getItem('admin_id'),
+        adminToken: !!localStorage.getItem('admin_token')
+      }
+    });
+    
+    // Validate with detailed error messages
+    if (!actualStudentId) {
+      const errorMsg = 'Unable to identify user. Please log in again.';
+      console.error('❌ Missing user ID. Available:', {
+        studentId,
+        storedStudentId: localStorage.getItem('studentId'),
+        adminId: localStorage.getItem('admin_id'),
+        studentToken: !!localStorage.getItem('student_token'),
+        adminToken: !!localStorage.getItem('admin_token')
+      });
+      toast.error(errorMsg);
+      return;
+    }
+    
+    if (!trimmedTitle) {
+      console.error('❌ Missing post title');
+      toast.error('Please enter a post title');
+      return;
+    }
+    
+    if (!trimmedContent) {
+      console.error('❌ Missing post content');
+      toast.error('Please enter post content');
+      return;
+    }
+    
+    if (!trimmedCommunity) {
+      console.error('❌ Missing community selection');
+      if (joinedCommunities.length === 0) {
+        toast.error('Please join a community first before creating a post');
+      } else {
+        toast.error('Please select a community from the dropdown');
+      }
       return;
     }
 
     try {
-      const newPost = await createPostAPI(studentId, selectedCommunity, newPostTitle, newPostContent);
+      console.log('✅ Creating post with:', {
+        actualStudentId,
+        selectedCommunity: trimmedCommunity,
+        title: trimmedTitle,
+        content: trimmedContent
+      });
+      
+      const newPost = await createPostAPI(actualStudentId, trimmedCommunity, trimmedTitle, trimmedContent);
       setPosts(prev => [newPost, ...prev]);
       setNewPostTitle('');
       setNewPostContent('');
       setSelectedCommunity('');
       setIsCreatePostOpen(false);
       toast.success('Post created successfully!');
-    } catch (error) {
-      toast.error('Failed to create post');
+    } catch (error: any) {
+      console.error('❌ Error creating post:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || 'Failed to create post';
+      toast.error(errorMsg);
     }
   };
 
   const createCommunityHandler = async () => {
-    if (!studentId || !newCommunityName.trim() || !newCommunityDesc.trim() || !newCommunityCategory) {
-      toast.error('Please fill all fields');
+    // Get actual user ID using helper function
+    const actualStudentId = getActualUserId();
+    
+    // Trim all inputs
+    const trimmedName = newCommunityName?.trim() || '';
+    const trimmedDesc = newCommunityDesc?.trim() || '';
+    const trimmedCategory = newCommunityCategory?.trim() || '';
+    
+    // Validate with detailed error messages
+    if (!actualStudentId) {
+      toast.error('Unable to identify user. Please log in again.');
+      return;
+    }
+    
+    if (!trimmedName) {
+      toast.error('Please enter a community name');
+      return;
+    }
+    
+    if (!trimmedDesc) {
+      toast.error('Please enter a community description');
+      return;
+    }
+    
+    if (!trimmedCategory) {
+      toast.error('Please select a category');
       return;
     }
 
     try {
-      const newCommunity = await createCommunity(studentId, newCommunityName, newCommunityDesc, newCommunityCategory);
+      const newCommunity = await createCommunity(actualStudentId, trimmedName, trimmedDesc, trimmedCategory);
       setCommunities(prev => [...prev, newCommunity]);
       setNewCommunityName('');
       setNewCommunityDesc('');
       setNewCommunityCategory('');
       setIsCreateCommunityOpen(false);
       toast.success('Community created successfully!');
-    } catch (error) {
-      toast.error('Failed to create community');
+    } catch (error: any) {
+      console.error('❌ Error creating community:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || 'Failed to create community';
+      toast.error(errorMsg);
     }
   };
 
@@ -676,15 +811,22 @@ export const Community: React.FC<CommunityProps> = ({ onToggle }) => {
                 />
                 <select
                   value={selectedCommunity}
-                  onChange={(e) => setSelectedCommunity(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Community selected:', e.target.value);
+                    setSelectedCommunity(e.target.value);
+                  }}
                   className="w-full p-2 rounded-md border border-input bg-background"
                 >
                   <option value="">Select Community</option>
-                  {joinedCommunities.map((community) => (
-                    <option key={community.community_id} value={community.community_id}>
-                      {community.name}
-                    </option>
-                  ))}
+                  {joinedCommunities.length > 0 ? (
+                    joinedCommunities.map((community) => (
+                      <option key={community.community_id} value={community.community_id}>
+                        {community.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No communities joined. Join a community first.</option>
+                  )}
                 </select>
                 <Textarea
                   placeholder="Share your thoughts..."
