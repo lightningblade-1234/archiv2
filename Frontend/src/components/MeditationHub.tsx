@@ -154,12 +154,12 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-500">
+        <div className="min-h-screen bg-slate-950 text-slate-50 transition-colors duration-500">
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+            <div className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
                 <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-slate-800 text-slate-300">
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                         <div>
@@ -167,10 +167,10 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                 <Brain className="w-6 h-6 text-teal-500" />
                                 MindCare Clinical Hub
                             </h1>
-                            <p className="text-xs text-muted-foreground font-mono">V.2.4.0 • NEURO-FEEDBACK ACTIVE</p>
+                            <p className="text-xs text-slate-400 font-mono">V.2.4.0 • NEURO-FEEDBACK ACTIVE</p>
                         </div>
                     </div>
-                    <Badge variant="outline" className="bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800">
+                    <Badge variant="outline" className="bg-teal-500/10 text-teal-400 border-teal-800">
                         <HeartPulse className="w-3 h-3 mr-1 animate-pulse" />
                         HRV: OPTIMAL
                     </Badge>
@@ -182,8 +182,8 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                 {/* Clinical Triage Section */}
                 <section className="space-y-6">
                     <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-semibold">Clinical Triage</h2>
-                        <p className="text-muted-foreground">Select your current mental load for a prescribed protocol.</p>
+                        <h2 className="text-2xl font-semibold text-slate-50">Clinical Triage</h2>
+                        <p className="text-slate-400">Select your current mental load for a prescribed protocol.</p>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -194,11 +194,11 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleStateSelect(state)}
                                 className={`p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-3 ${selectedState === state
-                                    ? 'border-teal-500 bg-teal-500/5 dark:bg-teal-500/10 shadow-lg shadow-teal-500/20'
-                                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-200 dark:hover:border-teal-800'
+                                    ? 'border-teal-500 bg-teal-500/10 shadow-lg shadow-teal-500/20'
+                                    : 'border-slate-800 bg-slate-900 hover:border-teal-800'
                                     }`}
                             >
-                                <div className={`p-3 rounded-full ${selectedState === state ? 'bg-teal-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                <div className={`p-3 rounded-full ${selectedState === state ? 'bg-teal-500 text-white' : 'bg-slate-800 text-slate-400'
                                     }`}>
                                     {state === 'anxious' && <Wind className="w-5 h-5" />}
                                     {state === 'brain_fog' && <Brain className="w-5 h-5" />}
@@ -206,7 +206,7 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                     {state === 'panic' && <Activity className="w-5 h-5" />}
                                     {state === 'stressed' && <Zap className="w-5 h-5" />}
                                 </div>
-                                <span className="capitalize font-medium text-sm">
+                                <span className="capitalize font-medium text-sm text-slate-300">
                                     {state.replace('_', ' ')}
                                 </span>
                             </motion.button>
@@ -224,21 +224,21 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                             className="relative"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-blue-500/20 blur-3xl -z-10" />
-                            <Card className="border-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-xl overflow-hidden">
+                            <Card className="border-0 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden border border-slate-800">
                                 <div className={`h-2 w-full bg-gradient-to-r ${protocols[selectedState].color}`} />
                                 <CardContent className="p-8">
                                     <div className="flex flex-col md:flex-row gap-8 items-center">
                                         <div className="flex-1 space-y-4">
-                                            <Badge variant="secondary" className="mb-2">
+                                            <Badge variant="secondary" className="mb-2 bg-slate-800 text-slate-300">
                                                 RECOMMENDED PROTOCOL
                                             </Badge>
-                                            <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
+                                            <h3 className="text-3xl font-bold text-slate-50">
                                                 {protocols[selectedState].title}
                                             </h3>
-                                            <p className="text-lg text-muted-foreground">
+                                            <p className="text-lg text-slate-400">
                                                 {protocols[selectedState].description}
                                             </p>
-                                            <div className="flex items-center gap-6 text-sm font-medium text-slate-500">
+                                            <div className="flex items-center gap-6 text-sm font-medium text-slate-400">
                                                 <span className="flex items-center gap-2">
                                                     <Timer className="w-4 h-4" />
                                                     {protocols[selectedState].duration} min
@@ -261,9 +261,9 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                                     Start Session
                                                 </Button>
                                             ) : (
-                                                <div className="w-full md:w-64 bg-slate-100 dark:bg-slate-800 rounded-2xl p-4 space-y-4">
+                                                <div className="w-full md:w-64 bg-slate-800 rounded-2xl p-4 space-y-4 border border-slate-700">
                                                     <div className="flex justify-between items-center mb-2">
-                                                        <span className="text-xs font-mono text-muted-foreground">SESSION ACTIVE</span>
+                                                        <span className="text-xs font-mono text-slate-400">SESSION ACTIVE</span>
                                                         <span className="font-mono font-bold text-teal-500">
                                                             {formatTime(timer)} / {formatTime(activeSession.duration * 60)}
                                                         </span>
@@ -272,7 +272,7 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                                     <div className="flex gap-2">
                                                         <Button
                                                             variant="outline"
-                                                            className="flex-1"
+                                                            className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-700"
                                                             onClick={() => setIsPlaying(!isPlaying)}
                                                         >
                                                             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -280,6 +280,7 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                                         <Button
                                                             variant="destructive"
                                                             size="icon"
+                                                            className="bg-red-600/20 border-red-600/50 text-red-400 hover:bg-red-600/30"
                                                             onClick={() => {
                                                                 setActiveSession(null);
                                                                 setIsPlaying(false);
@@ -301,7 +302,7 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
 
                 {/* Neuro-Tools Grid */}
                 <section>
-                    <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold mb-6 flex items-center gap-2 text-slate-50">
                         <Zap className="w-5 h-5 text-amber-500" />
                         Quick Neuro-Tools
                     </h3>
@@ -311,34 +312,34 @@ export const MeditationHub: React.FC<MeditationHubProps> = ({ onBack, onComplete
                                 title: "Panic Button",
                                 desc: "Immediate 4-7-8 breathing",
                                 icon: Activity,
-                                color: "text-red-500",
+                                color: "text-red-400",
                                 bg: "bg-red-500/10"
                             },
                             {
                                 title: "Focus Stream",
                                 desc: "40Hz Binaural Beats",
                                 icon: Brain,
-                                color: "text-blue-500",
+                                color: "text-blue-400",
                                 bg: "bg-blue-500/10"
                             },
                             {
                                 title: "Sleep Gate",
                                 desc: "Delta Wave Induction",
                                 icon: Moon,
-                                color: "text-indigo-500",
+                                color: "text-indigo-400",
                                 bg: "bg-indigo-500/10"
                             }
                         ].map((tool, i) => (
-                            <Card key={i} className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <Card key={i} className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-slate-800 bg-slate-900 hover:bg-slate-800">
                                 <CardHeader className="flex flex-row items-center gap-4">
                                     <div className={`p-3 rounded-xl ${tool.bg} ${tool.color} group-hover:scale-110 transition-transform`}>
                                         <tool.icon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <CardTitle className="text-base">{tool.title}</CardTitle>
-                                        <CardDescription className="text-xs">{tool.desc}</CardDescription>
+                                        <CardTitle className="text-base text-slate-50">{tool.title}</CardTitle>
+                                        <CardDescription className="text-xs text-slate-400">{tool.desc}</CardDescription>
                                     </div>
-                                    <ChevronRight className="w-5 h-5 ml-auto text-slate-300 group-hover:text-slate-500 transition-colors" />
+                                    <ChevronRight className="w-5 h-5 ml-auto text-slate-600 group-hover:text-slate-400 transition-colors" />
                                 </CardHeader>
                             </Card>
                         ))}

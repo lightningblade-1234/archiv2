@@ -93,16 +93,16 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
 
   return (
     <DashboardLayout userType="student">
-      <div className="min-h-screen relative overflow-hidden">
+      <div className="min-h-screen relative overflow-hidden bg-slate-950">
         {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-sky-400 via-cyan-300 to-emerald-300 dark:from-sky-900 dark:via-cyan-900 dark:to-emerald-900 opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 opacity-100" />
 
         {/* Floating particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(12)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-white/30 rounded-full"
+              className="absolute w-2 h-2 bg-cyan-400/20 rounded-full"
               initial={{
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight,
@@ -127,36 +127,36 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
           <Button
             onClick={onBack}
             variant="ghost"
-            className="mb-6 glass-card hover:bg-white/20"
+            className="mb-6 glass-card hover:bg-slate-800 text-slate-300 border border-slate-800"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Activities
           </Button>
 
           {/* Main card */}
-          <Card className="glass-card border-0 max-w-4xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-black/10">
+          <Card className="glass-card border border-slate-800 max-w-4xl mx-auto backdrop-blur-xl bg-slate-900/80">
             <CardHeader className="text-center space-y-4 pb-8">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <CardTitle className="text-4xl font-bold mb-2">
+                <CardTitle className="text-4xl font-bold mb-2 text-slate-50">
                   Walking Meditation
                 </CardTitle>
-                <p className="text-lg italic text-muted-foreground">{quote}</p>
+                <p className="text-lg italic text-slate-400">{quote}</p>
               </motion.div>
 
               {/* Meditation info badges */}
               <div className="flex gap-3 justify-center flex-wrap">
-                <Badge variant="secondary" className="glass-card px-4 py-2">
+                <Badge variant="secondary" className="glass-card px-4 py-2 bg-slate-800/50 border-slate-700 text-slate-300">
                   <Sparkles className="w-4 h-4 mr-2" />
                   {meditationType}
                 </Badge>
-                <Badge variant="secondary" className="glass-card px-4 py-2">
+                <Badge variant="secondary" className="glass-card px-4 py-2 bg-slate-800/50 border-slate-700 text-slate-300">
                   ⏱️ {totalDuration / 60} minutes
                 </Badge>
-                <Badge variant="secondary" className="glass-card px-4 py-2">
+                <Badge variant="secondary" className="glass-card px-4 py-2 bg-slate-800/50 border-slate-700 text-slate-300">
                   📊 {difficulty}
                 </Badge>
               </div>
@@ -185,7 +185,7 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                       stroke="currentColor"
                       strokeWidth="12"
                       fill="none"
-                      className="text-white/20"
+                      className="text-slate-800"
                     />
                     {/* Progress circle */}
                     <motion.circle
@@ -216,7 +216,7 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                   {/* Timer display */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <motion.div
-                      className="text-6xl font-bold font-mono"
+                      className="text-6xl font-bold font-mono text-slate-50"
                       animate={{
                         opacity: timerState === 'running' ? [1, 0.7, 1] : 1,
                       }}
@@ -227,12 +227,12 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                     >
                       {formatTime(timeLeft)}
                     </motion.div>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-slate-400 mt-2">
                       {timerState === 'completed' ? 'Complete!' :
                         timerState === 'running' ? 'In Progress' :
                           timerState === 'paused' ? 'Paused' : 'Ready to begin'}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {Math.round(progress)}% complete
                     </p>
                   </div>
@@ -287,7 +287,7 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                         onClick={handleReset}
                         size="lg"
                         variant="outline"
-                        className="glass-card hover:bg-white/20 px-8 py-6"
+                        className="glass-card hover:bg-slate-800 px-8 py-6 border-slate-700 text-slate-300"
                       >
                         <RotateCcw className="w-5 h-5 mr-2" />
                         Reset
@@ -298,11 +298,11 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
               </div>
 
               {/* Ambient sound controls */}
-              <div className="glass-card p-6 rounded-xl">
+              <div className="glass-card p-6 rounded-xl bg-slate-800/50 border border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                    <Label htmlFor="sound-toggle" className="text-base font-medium">
+                    {soundEnabled ? <Volume2 className="w-5 h-5 text-slate-300" /> : <VolumeX className="w-5 h-5 text-slate-500" />}
+                    <Label htmlFor="sound-toggle" className="text-base font-medium text-slate-300">
                       Ambient Sounds
                     </Label>
                   </div>
@@ -331,8 +331,8 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                           onClick={() => setAmbientSound(sound.id as AmbientSound)}
                           variant={ambientSound === sound.id ? 'default' : 'outline'}
                           className={`glass-card ${ambientSound === sound.id
-                            ? 'bg-gradient-to-r from-cyan-500/30 to-emerald-500/30 border-cyan-400'
-                            : 'hover:bg-white/10'
+                            ? 'bg-gradient-to-r from-cyan-500/30 to-emerald-500/30 border-cyan-400 text-slate-50'
+                            : 'hover:bg-slate-800 border-slate-700 text-slate-300'
                             }`}
                         >
                           <Icon className="w-4 h-4 mr-2" />
@@ -349,10 +349,10 @@ export const MindfulnessActivity: React.FC<MindfulnessActivityProps> = ({ onBack
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center glass-card p-6 rounded-xl"
+                  className="text-center glass-card p-6 rounded-xl bg-slate-800/50 border border-slate-700"
                 >
-                  <p className="text-lg font-medium mb-2">Focus on your breath</p>
-                  <p className="text-muted-foreground">
+                  <p className="text-lg font-medium mb-2 text-slate-50">Focus on your breath</p>
+                  <p className="text-slate-400">
                     Walk at a comfortable pace. Notice each step. Feel your feet connecting with the ground.
                     When your mind wanders, gently return your focus to your breathing and movement.
                   </p>

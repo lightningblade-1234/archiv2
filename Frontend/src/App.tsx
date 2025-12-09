@@ -11,7 +11,8 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { HavenLandingPage } from "./pages/HavenLandingPage";
 import { OriginalLandingPage } from "./pages/OriginalLandingPage";
 import { PersonalCare } from "./pages/PersonalCare";
-import { ResourcesAndSelfCare } from "./pages/ResourcesAndSelfCare";
+import { Resources } from "./pages/Resources";
+import { SelfCare } from "./pages/SelfCare";
 import { StudentLogin } from "./pages/StudentLogin";
 import { AdminLogin } from "./pages/AdminLogin";
 import { BookSession } from "./pages/BookSession";
@@ -106,7 +107,15 @@ const App = () => {
                 path="/student-dashboard/resources" 
                 element={
                   <ProtectedRoute>
-                    <ResourcesAndSelfCare />
+                    <Resources />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/student-dashboard/self-care" 
+                element={
+                  <ProtectedRoute>
+                    <SelfCare />
                   </ProtectedRoute>
                 } 
               />
@@ -143,7 +152,7 @@ const App = () => {
                   </Suspense>
                 } 
               />
-              <Route path="/admin-dashboard/resources" element={<ResourcesAndSelfCare />} />
+              <Route path="/admin-dashboard/resources" element={<Resources />} />
               <Route path="/admin-dashboard/results" element={<Results />} />
               <Route path="/admin-dashboard/requests" element={<StudentRequests />} />
               <Route 

@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   LogOut,
   Menu,
-  X
+  X,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, userType }) 
 
   const studentItems = [
     { title: 'Personal Care', url: '/student-dashboard', icon: Heart },
-    { title: 'Resources & Self-Care', url: '/student-dashboard/resources', icon: BookOpen },
+    { title: 'Resources', url: '/student-dashboard/resources', icon: BookOpen },
+    { title: 'Self-Care', url: '/student-dashboard/self-care', icon: Sparkles },
     { title: 'Journal', url: '/student-dashboard/journal', icon: BookOpen },
     { title: 'Book Session', url: '/student-dashboard/booking', icon: Calendar },
   ];

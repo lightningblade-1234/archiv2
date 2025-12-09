@@ -9,6 +9,7 @@ from app.core.logging import configure_logging
 from app.db.database import init_db
 from app.api import messages, assessments, alerts, learning, auth, students, temporal, outcomes, admin
 from app.api import community as community_api
+from app.api import journal
 from app.tasks.outcome_checker import check_symptom_improvement
 
 # Import all models to ensure relationships are properly registered
@@ -88,6 +89,7 @@ app.include_router(students.router)
 app.include_router(temporal.router)
 app.include_router(outcomes.router)
 app.include_router(admin.router)
+app.include_router(journal.router)
 
 
 @app.get("/")

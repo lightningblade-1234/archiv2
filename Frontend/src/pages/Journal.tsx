@@ -3,9 +3,10 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RichTextEditor } from '@/components/RichTextEditor';
-import { Save, Calendar, Eye, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { Save, Calendar, Eye, Maximize2, Minimize2, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStudent } from '@/contexts/StudentContext';
+import { getJournalSuggestions, type JournalEntry as JournalEntryType } from '@/services/api';
 
 interface JournalEntry {
   id: string;
@@ -23,6 +24,8 @@ export const Journal: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [suggestion, setSuggestion] = useState<string>('');
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
 
   // Get user-specific storage key
   const getStorageKey = () => {
@@ -58,6 +61,40 @@ export const Journal: React.FC = () => {
       setEntries([]);
     }
   }, [studentId]);
+
+  // Load suggestions when entries change
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      console.log('📝 Journal: Loading suggestions', { studentId, entriesCount: entries.length });
+      
+      if (!studentId) {
+        console.log('📝 Journal: No studentId, setting default message');
+        setSuggestion('Start writing in your journal to receive personalized suggestions!');
+        return;
+      }
+
+      if (entries.length === 0) {
+        console.log('📝 Journal: No entries, setting default message');
+        setSuggestion('Start writing in your journal to receive personalized suggestions!');
+        return;
+      }
+
+      setIsLoadingSuggestion(true);
+      try {
+        console.log('📝 Journal: Calling getJournalSuggestions API', { studentId, entriesCount: entries.length });
+        const response = await getJournalSuggestions(studentId, entries as JournalEntryType[]);
+        console.log('📝 Journal: Received suggestion:', response.suggestion);
+        setSuggestion(response.suggestion);
+      } catch (error) {
+        console.error('❌ Journal: Error loading suggestions:', error);
+        setSuggestion('Take a moment today to reflect on what you\'re grateful for. Consider writing about something positive that happened recently.');
+      } finally {
+        setIsLoadingSuggestion(false);
+      }
+    };
+
+    loadSuggestions();
+  }, [studentId, entries]);
 
   // Save entries to localStorage whenever entries change (only if user is logged in)
   useEffect(() => {
@@ -260,29 +297,30 @@ export const Journal: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* AI Insights */}
+            {/* AI Insights - Daily Suggestions */}
             <Card className="glass-card border-wellness-peaceful/20">
               <CardHeader>
-                <CardTitle className="text-wellness-peaceful">AI Insights</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-wellness-peaceful">
+                  <Sparkles className="w-5 h-5" />
+                  AI Insights
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <h4 className="font-medium text-sm mb-1">Mood Patterns</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Your recent entries show positive growth in stress management techniques.
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <h4 className="font-medium text-sm mb-1">Reflection Themes</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Common themes: Gratitude, Academic Progress, Social Connections
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <h4 className="font-medium text-sm mb-1">Suggestions</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Try exploring your creative side in tomorrow's entry.
-                  </p>
+              <CardContent>
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-wellness-peaceful" />
+                    Daily Suggestion
+                  </h4>
+                  {isLoadingSuggestion ? (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating suggestion...
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {suggestion}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

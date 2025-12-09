@@ -4,8 +4,42 @@ from openai import AsyncOpenAI
 from app.core.config import settings
 import structlog
 import httpx
+from pathlib import Path
 
 logger = structlog.get_logger()
+
+
+def _load_system_prompt() -> str:
+    """Load the unified mental health system prompt from file."""
+    try:
+        # Get the backend directory (parent of app directory)
+        backend_dir = Path(__file__).parent.parent.parent
+        prompt_file = backend_dir / "system prompttxt.txt"
+        
+        if prompt_file.exists():
+            with open(prompt_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                # Extract the prompt from the Python variable assignment
+                # Format: UNIFIED_MENTAL_HEALTH_SYSTEM_PROMPT = """..."""
+                if 'UNIFIED_MENTAL_HEALTH_SYSTEM_PROMPT' in content:
+                    # Extract content between triple quotes
+                    start = content.find('"""') + 3
+                    end = content.rfind('"""')
+                    if start > 2 and end > start:
+                        prompt = content[start:end].strip()
+                        logger.info("system_prompt_loaded", source=str(prompt_file))
+                        return prompt
+        else:
+            logger.warning("system_prompt_file_not_found", path=str(prompt_file))
+    except Exception as e:
+        logger.error("failed_to_load_system_prompt", error=str(e), exc_info=True)
+    
+    # Fallback to default
+    return "You are a helpful assistant."
+
+
+# Load system prompt at module level (cached)
+_DEFAULT_SYSTEM_PROMPT = _load_system_prompt()
 
 
 class LLMClient:
@@ -38,7 +72,8 @@ class LLMClient:
     async def generate(self, prompt: str, max_tokens: int = 500, system_message: str = None) -> str:
         """Generate response from LLM."""
         try:
-            system_content = system_message or "You are a helpful assistant."
+            # Use provided system message, or default to unified mental health prompt, or fallback
+            system_content = system_message or _DEFAULT_SYSTEM_PROMPT
             
             response = await self.client.chat.completions.create(
                 model=self.model,

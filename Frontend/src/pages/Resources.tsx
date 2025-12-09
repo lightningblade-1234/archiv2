@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Video, 
-  Headphones, 
-  FileText, 
+import {
+  BookOpen,
+  Video,
+  Headphones,
+  FileText,
   Search,
   Clock,
   Star,
@@ -17,16 +17,18 @@ import {
   ExternalLink,
   Heart,
   Brain,
-  Shield
+  Shield,
+  Sparkles
 } from 'lucide-react';
 import { ShimmerCard } from '@/components/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 interface Resource {
   id: string;
   title: string;
   description: string;
   type: 'article' | 'video' | 'audio' | 'pdf';
-  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general';
+  category: 'anxiety' | 'depression' | 'stress' | 'wellness' | 'general' | 'meditation' | 'yoga';
   duration?: string;
   rating: number;
   featured: boolean;
@@ -34,82 +36,97 @@ interface Resource {
 }
 
 export const Resources: React.FC = () => {
+  console.log('🔵 Resources component loaded!');
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedResourceCategory, setSelectedResourceCategory] = useState('all');
+  const [resources, setResources] = useState<Resource[]>([]);
 
+  // Load resources - using mock data
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
+    const fetchResources = async () => {
+      try {
+        // Mock resources data
+        const mockResources: Resource[] = [
+          {
+            id: '1',
+            title: 'Understanding Anxiety: A Complete Guide',
+            description: 'Learn about anxiety disorders, symptoms, and effective coping strategies.',
+            type: 'article',
+            category: 'anxiety',
+            duration: '8 min read',
+            rating: 4.8,
+            featured: true,
+          },
+          {
+            id: '2',
+            title: 'Mindfulness Meditation for Beginners',
+            description: 'A guided meditation video to help you start your mindfulness journey.',
+            type: 'video',
+            category: 'meditation',
+            duration: '12 min',
+            rating: 4.9,
+            featured: true,
+          },
+          {
+            id: '3',
+            title: 'Stress Management Techniques',
+            description: 'Practical audio guide on managing stress in daily life.',
+            type: 'audio',
+            category: 'stress',
+            duration: '15 min',
+            rating: 4.7,
+            featured: false,
+          },
+          {
+            id: '4',
+            title: 'Depression Support Workbook',
+            description: 'Downloadable PDF with exercises and worksheets for depression support.',
+            type: 'pdf',
+            category: 'depression',
+            duration: '24 pages',
+            rating: 4.6,
+            featured: true,
+          },
+          {
+            id: '5',
+            title: 'Yoga for Mental Wellness',
+            description: 'Gentle yoga sequences to improve mental health and reduce stress.',
+            type: 'video',
+            category: 'yoga',
+            duration: '20 min',
+            rating: 4.8,
+            featured: false,
+          },
+          {
+            id: '6',
+            title: 'Building Resilience',
+            description: 'Learn how to build emotional resilience and bounce back from challenges.',
+            type: 'article',
+            category: 'wellness',
+            duration: '10 min read',
+            rating: 4.7,
+            featured: false,
+          }
+        ];
+        setResources(mockResources);
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchResources();
   }, []);
 
-  const resources: Resource[] = [
-    {
-      id: '1',
-      title: 'Understanding Anxiety: A Complete Guide',
-      description: 'Learn about anxiety disorders, symptoms, and effective coping strategies.',
-      type: 'article',
-      category: 'anxiety',
-      duration: '8 min read',
-      rating: 4.8,
-      featured: true,
-    },
-    {
-      id: '2',
-      title: 'Mindfulness Meditation for Beginners',
-      description: 'A guided meditation video to help you start your mindfulness journey.',
-      type: 'video',
-      category: 'wellness',
-      duration: '12 min',
-      rating: 4.9,
-      featured: true,
-    },
-    {
-      id: '3',
-      title: 'Stress Management Techniques',
-      description: 'Practical audio guide on managing stress in daily life.',
-      type: 'audio',
-      category: 'stress',
-      duration: '15 min',
-      rating: 4.7,
-      featured: false,
-    },
-    {
-      id: '4',
-      title: 'Depression Support Workbook',
-      description: 'Downloadable PDF with exercises and worksheets for depression support.',
-      type: 'pdf',
-      category: 'depression',
-      duration: '24 pages',
-      rating: 4.6,
-      featured: true,
-    },
-    {
-      id: '5',
-      title: 'Building Resilience in Daily Life',
-      description: 'Learn how to develop mental resilience and bounce back from challenges.',
-      type: 'article',
-      category: 'wellness',
-      duration: '6 min read',
-      rating: 4.8,
-      featured: false,
-    },
-    {
-      id: '6',
-      title: 'Sleep and Mental Health',
-      description: 'Understanding the connection between sleep quality and mental wellness.',
-      type: 'video',
-      category: 'general',
-      duration: '18 min',
-      rating: 4.5,
-      featured: false,
-    }
-  ];
-
-  const categories = [
+  const resourceCategories = [
     { id: 'all', label: 'All Resources', icon: BookOpen },
     { id: 'anxiety', label: 'Anxiety', icon: Brain },
     { id: 'depression', label: 'Depression', icon: Heart },
+    { id: 'meditation', label: 'Meditation', icon: Sparkles },
+    { id: 'yoga', label: 'Yoga', icon: Heart },
     { id: 'stress', label: 'Stress', icon: Shield },
     { id: 'wellness', label: 'Wellness', icon: Star },
     { id: 'general', label: 'General', icon: FileText }
@@ -135,12 +152,24 @@ export const Resources: React.FC = () => {
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+      resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedResourceCategory === 'all' || resource.category === selectedResourceCategory;
+
+    // Hide individual videos from the main list, keep only the collection container
+    const isHiddenVideo = resource.type === 'video' && resource.title !== 'Mindfulness Meditation for Beginners';
+
+    return matchesSearch && matchesCategory && !isHiddenVideo;
   });
 
-  const featuredResources = resources.filter(resource => resource.featured);
+  const featuredResources = resources.filter(resource => resource.featured && (resource.type !== 'video' || resource.title === 'Mindfulness Meditation for Beginners'));
+
+  const handleResourceClick = (resource: Resource) => {
+    if (resource.title.includes('Building Resilience') || resource.title.includes('Resilience')) {
+      navigate('/resilience-article');
+    } else {
+      navigate(`/student-dashboard/resources/${resource.id}`);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -168,7 +197,7 @@ export const Resources: React.FC = () => {
           <p className="text-xl text-muted-foreground mb-6">
             Discover tools, articles, and guides to support your mental wellness journey
           </p>
-          
+
           {/* Search */}
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -220,7 +249,10 @@ export const Resources: React.FC = () => {
                           <span className="text-sm font-medium">{resource.rating}</span>
                         </div>
                       </div>
-                      <Button className="w-full btn-glass group-hover:bg-white/30">
+                      <Button
+                        className="w-full btn-glass group-hover:bg-white/30"
+                        onClick={() => handleResourceClick(resource)}
+                      >
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Access Resource
                       </Button>
@@ -233,15 +265,15 @@ export const Resources: React.FC = () => {
         )}
 
         {/* Categories and All Resources */}
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full glass-card">
-            {categories.map((category) => {
+        <Tabs value={selectedResourceCategory} onValueChange={setSelectedResourceCategory} className="space-y-6">
+          <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full glass-card overflow-x-auto">
+            {resourceCategories.map((category) => {
               const Icon = category.icon;
               return (
                 <TabsTrigger
                   key={category.id}
                   value={category.id}
-                  className="flex items-center gap-2 data-[state=active]:bg-white/30"
+                  className="flex items-center gap-2 data-[state=active]:bg-white/30 min-w-[100px]"
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{category.label}</span>
@@ -250,7 +282,7 @@ export const Resources: React.FC = () => {
             })}
           </TabsList>
 
-          {categories.map((category) => (
+          {resourceCategories.map((category) => (
             <TabsContent key={category.id} value={category.id}>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredResources.map((resource, index) => {
@@ -271,7 +303,7 @@ export const Resources: React.FC = () => {
                           </Badge>
                         </div>
                         <CardTitle className="text-base">{resource.title}</CardTitle>
-                        <CardDescription className="text-sm">{resource.description}</CardDescription>
+                        <CardDescription className="text-sm line-clamp-2">{resource.description}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="flex items-center justify-between mb-3">
@@ -284,7 +316,11 @@ export const Resources: React.FC = () => {
                             <span className="text-xs">{resource.rating}</span>
                           </div>
                         </div>
-                        <Button size="sm" className="w-full btn-glass">
+                        <Button
+                          size="sm"
+                          className="w-full btn-glass"
+                          onClick={() => handleResourceClick(resource)}
+                        >
                           View
                         </Button>
                       </CardContent>
@@ -292,7 +328,7 @@ export const Resources: React.FC = () => {
                   );
                 })}
               </div>
-              
+
               {filteredResources.length === 0 && (
                 <div className="text-center py-12">
                   <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />

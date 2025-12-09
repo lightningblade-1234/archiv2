@@ -621,3 +621,42 @@ export async function searchUsers(
   }
   return await response.json();
 }
+
+// ============ JOURNAL API ============
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  preview: string;
+  timestamp: number;
+}
+
+export interface JournalSuggestionsResponse {
+  suggestion: string;
+}
+
+// Get journal suggestions based on entries
+export async function getJournalSuggestions(
+  studentId: string,
+  entries: JournalEntry[]
+): Promise<JournalSuggestionsResponse> {
+  const response = await fetch(`${API_BASE_URL}/journal/suggestions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      student_id: studentId,
+      entries: entries,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to get journal suggestions' }));
+    throw new Error(error.detail || 'Failed to get journal suggestions');
+  }
+
+  return await response.json();
+}

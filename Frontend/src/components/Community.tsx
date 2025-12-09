@@ -360,7 +360,7 @@ export const Community: React.FC<CommunityProps> = ({ onToggle }) => {
     { key: 'home', title: 'Home', icon: Home },
     { key: 'profile', title: 'My Profile', icon: User },
     { key: 'messages', title: 'Messages', icon: Mail },
-    { key: 'matching', title: 'Matching', icon: Users },
+    { key: 'matching', title: 'PeerLift', icon: Users },
     { key: 'communities', title: 'Communities', icon: Briefcase },
     { key: 'settings', title: 'Settings', icon: Settings }
   ];

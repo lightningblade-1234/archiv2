@@ -11,7 +11,7 @@ import { StudentDashboard } from "./pages/StudentDashboard";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminCalendar } from "./pages/AdminCalendar";
 import { AIAssistant } from "./pages/AIAssistant";
-import { ResourcesAndSelfCare } from "./pages/ResourcesAndSelfCare";
+import { Resources } from "./pages/Resources";
 import { ResourcesHub } from "./pages/ResourcesHub";
 import { ResourceView } from "./pages/ResourceView";
 import { SelfCareHub } from "./pages/SelfCareHub";
@@ -52,14 +52,14 @@ const App = () => (
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/student-dashboard" element={<StudentDashboard />} />
             <Route path="/student-dashboard/ai" element={<AIAssistant />} />
-            <Route path="/student-dashboard/resources" element={<ResourcesAndSelfCare />} />
+            <Route path="/student-dashboard/resources" element={<Resources />} />
             <Route path="/student-dashboard/resources-hub" element={<ResourcesHub />} />
             <Route path="/self-care-hub" element={<SelfCareHub />} />
             <Route path="/student-dashboard/booking" element={<BookSession />} />
             <Route path="/student-dashboard/assessments" element={<StudentAssessments />} />
             <Route path="/student-dashboard/assessments/:id" element={<AssessmentRunner />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/admin-dashboard/resources" element={<ResourcesAndSelfCare />} />
+            <Route path="/admin-dashboard/resources" element={<Resources />} />
             <Route path="/admin-dashboard/screening" element={<ScreeningTests />} />
             <Route path="/admin-dashboard/screening/create" element={<CreateScreeningTest />} />
             <Route path="/admin-dashboard/screening/overview" element={<AssessmentOverview />} />

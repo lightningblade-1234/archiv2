@@ -165,7 +165,7 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-purple-50 to-lavender-100 dark:from-sky-950 dark:via-purple-950 dark:to-lavender-950 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <motion.div
@@ -179,22 +179,22 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="absolute left-0 top-1/2 -translate-y-1/2 hover:bg-white/20"
+              className="absolute left-0 top-1/2 -translate-y-1/2 hover:bg-slate-800 text-slate-300"
             >
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
               Back
             </Button>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-white/10 rounded-full backdrop-blur-sm">
-              <Sparkles className="w-5 h-5 text-purple-500" />
-              <span className="text-sm font-medium">Movement & Wellness</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-800">
+              <Sparkles className="w-5 h-5 text-purple-400" />
+              <span className="text-sm font-medium text-slate-300">Movement & Wellness</span>
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-sky-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
             Let's Get Moving!
           </h1>
 
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
             Take a break from studying with these gentle exercises. Just a few minutes can boost your energy, improve focus, and reduce stress.
           </p>
         </motion.div>
@@ -210,7 +210,7 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
               whileHover={{ y: -8, scale: 1.02 }}
               className="h-full"
             >
-              <Card className="h-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
+              <Card className="h-full bg-slate-900/80 backdrop-blur-sm border border-slate-800 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
                 <CardHeader className="relative pb-4">
                   {/* Animated Icon */}
                   <motion.div
@@ -228,18 +228,18 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                     {exercise.icon}
                   </motion.div>
 
-                  <CardTitle className="text-2xl font-bold mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  <CardTitle className="text-2xl font-bold mb-2 text-slate-50 group-hover:text-purple-400 transition-colors">
                     {exercise.name}
                   </CardTitle>
 
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-base text-slate-400">
                     {exercise.description}
                   </CardDescription>
 
                   {/* Duration Badge */}
                   <Badge
                     variant="secondary"
-                    className="absolute top-4 right-4 bg-gradient-to-r from-sky-500 to-purple-500 text-white border-0"
+                    className="absolute top-4 right-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-white border-0"
                   >
                     <Timer className="w-3 h-3 mr-1" />
                     {exercise.duration}
@@ -247,15 +247,15 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <div className="mb-4 p-3 bg-gradient-to-r from-sky-100/50 to-purple-100/50 dark:from-sky-900/30 dark:to-purple-900/30 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <strong className="text-foreground">Benefits:</strong> {exercise.benefits}
+                  <div className="mb-4 p-3 bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-lg border border-slate-800">
+                    <p className="text-sm text-slate-400">
+                      <strong className="text-slate-300">Benefits:</strong> {exercise.benefits}
                     </p>
                   </div>
 
                   <Button
                     onClick={() => handleStartExercise(exercise)}
-                    className="w-full bg-gradient-to-r from-sky-500 via-purple-500 to-pink-500 hover:from-sky-600 hover:via-purple-600 hover:to-pink-600 text-white border-0 shadow-lg group-hover:shadow-xl transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:from-cyan-600 hover:via-purple-600 hover:to-pink-600 text-white border-0 shadow-lg group-hover:shadow-xl transition-all duration-300"
                     size="lg"
                   >
                     <Play className="w-5 h-5 mr-2" />
@@ -271,15 +271,15 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
         <AnimatePresence>
           {selectedExercise && (
             <Dialog open={!!selectedExercise} onOpenChange={handleCloseModal}>
-              <DialogContent className="max-w-2xl bg-gradient-to-br from-sky-50 to-purple-50 dark:from-sky-950 dark:to-purple-950 border-0">
+              <DialogContent className="max-w-2xl bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800">
                 <DialogHeader>
                   <div className="flex items-center gap-4 mb-2">
                     <span className="text-5xl">{selectedExercise.icon}</span>
                     <div>
-                      <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-purple-600 bg-clip-text text-transparent">
+                      <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                         {selectedExercise.name}
                       </DialogTitle>
-                      <DialogDescription className="text-base mt-1">
+                      <DialogDescription className="text-base mt-1 text-slate-400">
                         {selectedExercise.description}
                       </DialogDescription>
                     </div>
@@ -289,19 +289,19 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                 <div className="mt-6 space-y-6">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-slate-400">
                       Step {currentStep + 1} of {selectedExercise.steps.length}
                     </span>
-                    <Badge variant="outline" className="bg-white/50 dark:bg-gray-800/50">
+                    <Badge variant="outline" className="bg-slate-800/50 border-slate-700 text-slate-300">
                       <Timer className="w-3 h-3 mr-1" />
                       {selectedExercise.duration}
                     </Badge>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-sky-500 to-purple-500"
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
                       initial={{ width: 0 }}
                       animate={{ width: `${((currentStep + 1) / selectedExercise.steps.length) * 100}%` }}
                       transition={{ duration: 0.3 }}
@@ -316,13 +316,13 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.3 }}
-                      className="p-6 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl border-2 border-purple-200 dark:border-purple-800"
+                      className="p-6 bg-slate-900/80 backdrop-blur-sm rounded-xl border-2 border-purple-800"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-sky-500 to-purple-500 text-white flex items-center justify-center font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white flex items-center justify-center font-bold">
                           {currentStep + 1}
                         </div>
-                        <p className="text-lg leading-relaxed">
+                        <p className="text-lg leading-relaxed text-slate-300">
                           {selectedExercise.steps[currentStep]}
                         </p>
                       </div>
@@ -331,14 +331,14 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
 
                   {/* All Steps Overview */}
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">All Steps:</p>
+                    <p className="text-sm font-medium text-slate-400">All Steps:</p>
                     <div className="space-y-1 max-h-32 overflow-y-auto pr-2">
                       {selectedExercise.steps.map((step, idx) => (
                         <div
                           key={idx}
                           className={`text-sm p-2 rounded ${idx === currentStep
-                            ? 'bg-purple-100 dark:bg-purple-900/30 font-medium'
-                            : 'text-muted-foreground'
+                            ? 'bg-purple-900/50 font-medium text-slate-200'
+                            : 'text-slate-400'
                             }`}
                         >
                           {idx + 1}. {step}
@@ -353,7 +353,7 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                       onClick={handlePrevStep}
                       disabled={currentStep === 0}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
                     >
                       Previous
                     </Button>
@@ -361,7 +361,7 @@ export const MovementExercises: React.FC<MovementExercisesProps> = ({ onBack, on
                     {currentStep < selectedExercise.steps.length - 1 ? (
                       <Button
                         onClick={handleNextStep}
-                        className="flex-1 bg-gradient-to-r from-sky-500 to-purple-500 hover:from-sky-600 hover:to-purple-600"
+                        className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
                       >
                         Next Step
                         <ChevronRight className="w-4 h-4 ml-2" />
